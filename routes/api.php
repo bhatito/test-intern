@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ManagerApprovalController;
 use App\Http\Controllers\Api\MasterProductController;
 use App\Http\Controllers\Api\ProductionOrderController;
 use App\Http\Controllers\Api\ProductionPlanController;
+use App\Http\Controllers\ProductionReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/production-plans/{plan}/submit', [ProductionPlanController::class, 'submit']);
         Route::put('/production-plans/{plan}/cancel', [ProductionPlanController::class, 'cancelSubmission']); // PERBAIKI INI
         Route::get('/production-plans/{plan}/history', [ProductionPlanController::class, 'history']);
+
+        Route::get('/production-reports', [ProductionReportController::class, 'index']);
+        Route::post('/production-reports/generate', [ProductionReportController::class, 'generate']);
+        Route::get('/production-reports/export', [ProductionReportController::class, 'export']);
     });
 
     // 🔸 Khusus Produksi

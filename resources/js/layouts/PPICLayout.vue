@@ -127,7 +127,7 @@ const menuItems = computed(() => {
         show: true
       },
       { 
-        path: '/ppic/laporan-produksi', 
+        path: '/ppic/laporan-rencana', 
         label: 'Laporan', 
         icon: '📈',
         show: true

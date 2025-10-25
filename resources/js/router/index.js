@@ -10,6 +10,7 @@ import ApprovalRencana from '@/views/produksi/ApprovalRencana.vue'
 import OrderProduksi from '@/views/produksi/OrderProduksi.vue'
 import LaporanProduksi from '@/views/produksi/LaporanProduksi.vue'
 import HistoryRencana from '../views/ppic/HistoryRencana.vue'
+import LaporanPPIC from '../views/ppic/LaporanPPIC.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -52,7 +53,16 @@ const router = createRouter({
       meta: { 
         requiresAuth: true, 
         department: 'ppic',
-        role: 'managerppic' // HANYA MANAGER PPIC YANG BISA AKSES
+        role: 'managerppic' 
+      }
+    },
+     { 
+      path: '/ppic/laporan-rencana', 
+      component: LaporanPPIC,
+      meta: { 
+        requiresAuth: true, 
+        department: 'ppic',
+        role: 'managerppic' 
       }
     },
     
@@ -68,7 +78,7 @@ const router = createRouter({
       meta: { 
         requiresAuth: true, 
         department: 'produksi',
-        role: 'managerproduksi' // HANYA MANAGER PRODUKSI YANG BISA AKSES
+        role: 'managerproduksi' 
       }
     },
     { 
@@ -82,7 +92,7 @@ const router = createRouter({
       meta: { requiresAuth: true, department: 'produksi' }
     },
 
-    // 🔹 404 Handler
+    
     {
       path: '/:pathMatch(.*)*',
       redirect: '/'
