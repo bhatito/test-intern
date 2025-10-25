@@ -1,0 +1,26 @@
+<?php
+
+use App\Http\Controllers\Api\AuthController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+// Login umum
+Route::post('/login', [AuthController::class, 'login']);
+
+// Group dengan auth sanctum
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    // 🔸 Khusus PPIC
+    Route::middleware('department:ppic')->group(function () {
+        Route::get('/ppic/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard PPIC']));
+        // Tambahkan route lain untuk PPIC di sini
+    });
+
+    // 🔸 Khusus Produksi
+    Route::middleware('department:produksi')->group(function () {
+        Route::get('/produksi/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard Produksi']));
+        // Tambahkan route lain untuk Produksi di sini
+    });
+});
