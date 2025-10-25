@@ -342,12 +342,6 @@ onMounted(() => {
                 <span class="text-sm text-gray-500">
                   Terakhir update: {{ formatDate(plan.updated_at) }}
                 </span>
-                <RouterLink 
-                  :to="`/ppic/rencana-produksi/${plan.id}`"
-                  class="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                >
-                  Lihat Detail →
-                </RouterLink>
               </div>
             </div>
           </div>
