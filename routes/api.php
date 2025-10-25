@@ -23,6 +23,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/production-plans', [ProductionPlanController::class, 'index']);
         Route::post('/production-plans', [ProductionPlanController::class, 'store']);
         Route::delete('/production-plans/{plan}', [ProductionPlanController::class, 'destroy']);
+        Route::put('/production-plans/{plan}/submit', [ProductionPlanController::class, 'submit']);
+        Route::put('/production-plans/{plan}/cancel', [ProductionPlanController::class, 'destroy']);
     });
 
     // 🔸 Khusus Produksi
@@ -32,8 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/manager/approvals/{plan}', [ManagerApprovalController::class, 'update']);
         Route::get('/production-orders', [ProductionOrderController::class, 'index']);
         Route::get('/production-orders/stats', [ProductionOrderController::class, 'stats']);
+        Route::get('/production-orders/search', [ProductionOrderController::class, 'search']);
         Route::get('/production-orders/{order}', [ProductionOrderController::class, 'show']);
         Route::put('/production-orders/{order}/start', [ProductionOrderController::class, 'start']);
         Route::put('/production-orders/{order}/complete', [ProductionOrderController::class, 'complete']);
+        Route::put('/production-orders/{order}/progress', [ProductionOrderController::class, 'updateProgress']);
     });
 });

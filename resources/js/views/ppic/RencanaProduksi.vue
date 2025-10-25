@@ -86,7 +86,7 @@ const submitForm = async () => {
   }
 }
 
-// 🔹 Hapus rencana (jika masih menunggu)
+// 🔹 Hapus rencana (jika masih draft atau menunggu persetujuan)
 const deleteRencana = async (rencana) => {
   if (!confirm(`Yakin menghapus rencana ${rencana.nomor_rencana}?`)) return
   
@@ -100,6 +100,40 @@ const deleteRencana = async (rencana) => {
     }, 3000)
   } catch (e) {
     errorMsg.value = e.response?.data?.message || 'Gagal menghapus rencana.'
+  }
+}
+
+// 🔹 Ajukan rencana (dari draft ke menunggu persetujuan)
+const submitRencana = async (rencana) => {
+  if (!confirm(`Ajukan rencana ${rencana.nomor_rencana} untuk persetujuan Manager Produksi?`)) return
+  
+  try {
+    await axios.put(`/api/production-plans/${rencana.id}/submit`)
+    successMsg.value = 'Rencana berhasil diajukan untuk persetujuan'
+    await loadRencana()
+    
+    setTimeout(() => {
+      successMsg.value = ''
+    }, 3000)
+  } catch (e) {
+    errorMsg.value = e.response?.data?.message || 'Gagal mengajukan rencana.'
+  }
+}
+
+// 🔹 Batalkan pengajuan (dari menunggu persetujuan ke draft)
+const cancelSubmission = async (rencana) => {
+  if (!confirm(`Batalkan pengajuan rencana ${rencana.nomor_rencana}?`)) return
+  
+  try {
+    await axios.put(`/api/production-plans/${rencana.id}/cancel`)
+    successMsg.value = 'Pengajuan rencana berhasil dibatalkan'
+    await loadRencana()
+    
+    setTimeout(() => {
+      successMsg.value = ''
+    }, 3000)
+  } catch (e) {
+    errorMsg.value = e.response?.data?.message || 'Gagal membatalkan pengajuan.'
   }
 }
 
@@ -136,12 +170,60 @@ const filteredRencana = computed(() => {
 const statistics = computed(() => {
   const stats = {
     total: rencanaList.value.length,
+    draft: rencanaList.value.filter(r => r.status === 'draft').length,
     menunggu: rencanaList.value.filter(r => r.status === 'menunggu_persetujuan').length,
     disetujui: rencanaList.value.filter(r => r.status === 'disetujui').length,
-    ditolak: rencanaList.value.filter(r => r.status === 'ditolak').length
+    ditolak: rencanaList.value.filter(r => r.status === 'ditolak').length,
+    menjadi_order: rencanaList.value.filter(r => r.status === 'menjadi_order').length
   }
   return stats
 })
+
+// 🔹 Tentukan tombol aksi berdasarkan status
+const getActionButtons = (rencana) => {
+  const actions = []
+  
+  if (rencana.status === 'draft') {
+    actions.push({
+      label: 'Ajukan',
+      action: () => submitRencana(rencana),
+      class: 'bg-blue-600 text-white hover:bg-blue-700',
+      icon: '📤'
+    })
+    actions.push({
+      label: 'Hapus',
+      action: () => deleteRencana(rencana),
+      class: 'bg-red-600 text-white hover:bg-red-700',
+      icon: '🗑️'
+    })
+  }
+  
+  if (rencana.status === 'menunggu_persetujuan') {
+    actions.push({
+      label: 'Batalkan',
+      action: () => cancelSubmission(rencana),
+      class: 'bg-orange-600 text-white hover:bg-orange-700',
+      icon: '↩️'
+    })
+    actions.push({
+      label: 'Hapus',
+      action: () => deleteRencana(rencana),
+      class: 'bg-red-600 text-white hover:bg-red-700',
+      icon: '🗑️'
+    })
+  }
+  
+  if (rencana.status === 'ditolak') {
+    actions.push({
+      label: 'Hapus',
+      action: () => deleteRencana(rencana),
+      class: 'bg-red-600 text-white hover:bg-red-700',
+      icon: '🗑️'
+    })
+  }
+  
+  return actions
+}
 
 onMounted(() => {
   loadProduk()
@@ -162,10 +244,14 @@ onMounted(() => {
         </div>
 
         <!-- STATISTICS -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
           <div class="bg-blue-50 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-blue-600">{{ statistics.total }}</div>
-            <div class="text-sm text-blue-800">Total Rencana</div>
+            <div class="text-sm text-blue-800">Total</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-gray-600">{{ statistics.draft }}</div>
+            <div class="text-sm text-gray-800">Draft</div>
           </div>
           <div class="bg-yellow-50 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-yellow-600">{{ statistics.menunggu }}</div>
@@ -178,6 +264,10 @@ onMounted(() => {
           <div class="bg-red-50 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-red-600">{{ statistics.ditolak }}</div>
             <div class="text-sm text-red-800">Ditolak</div>
+          </div>
+          <div class="bg-indigo-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-indigo-600">{{ statistics.menjadi_order }}</div>
+            <div class="text-sm text-indigo-800">Menjadi Order</div>
           </div>
         </div>
       </div>
@@ -355,15 +445,19 @@ onMounted(() => {
                         </span>
                       </td>
                       <td class="px-4 py-4 whitespace-nowrap text-sm">
-                        <button
-                          v-if="rencana.status === 'menunggu_persetujuan' || rencana.status === 'draft'"
-                          @click="deleteRencana(rencana)"
-                          class="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors"
-                          title="Hapus rencana"
-                        >
-                          Hapus
-                        </button>
-                        <span v-else class="text-gray-400">-</span>
+                        <div class="flex gap-2">
+                          <button
+                            v-for="button in getActionButtons(rencana)"
+                            :key="button.label"
+                            @click="button.action"
+                            :class="['px-3 py-1 text-xs rounded transition-colors', button.class]"
+                          >
+                            {{ button.icon }} {{ button.label }}
+                          </button>
+                          <span v-if="getActionButtons(rencana).length === 0" class="text-gray-400 text-xs">
+                            Tidak ada aksi
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   </tbody>
