@@ -82,7 +82,7 @@ const goToDashboard = () => {
         <nav class="flex flex-col px-4 py-3 gap-2 text-sm font-medium text-gray-700">
           <RouterLink to="/ppic" @click="mobileMenu = false" class="hover:text-black">Dashboard</RouterLink>
           <RouterLink to="/ppic/master-produk" @click="mobileMenu = false" class="hover:text-black">Master Produk</RouterLink>
-          <RouterLink to="/ppic/rencana-produksi" @click="mobileMenu = false" class="hover:text-black">Rencana Produksi</RouterLink>
+          <RouterLink to="/ppic/rencana-produksi" class="hover:text-black transition">Rencana Produksi</RouterLink>
           <RouterLink to="/ppic/laporan-produksi" @click="mobileMenu = false" class="hover:text-black">Laporan</RouterLink>
           <button
             @click="logout"

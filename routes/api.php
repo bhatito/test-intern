@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MasterProductController;
+use App\Http\Controllers\Api\ProductionPlanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('department:ppic')->group(function () {
         Route::get('/ppic/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard PPIC']));
         Route::apiResource('master-products', MasterProductController::class);
+        Route::get('/production-plans', [ProductionPlanController::class, 'index']);
+        Route::post('/production-plans', [ProductionPlanController::class, 'store']);
+        Route::delete('/production-plans/{plan}', [ProductionPlanController::class, 'destroy']);
     });
 
     // 🔸 Khusus Produksi

@@ -5,6 +5,7 @@ import LoginProduksi from '@/views/LoginProduksi.vue'
 import DashboardPPIC from '@/views/ppic/Dashboard.vue'
 import DashboardProduksi from '@/views/produksi/Dashboard.vue'
 import MasterProduk from '@/views/ppic/MasterProduk.vue'
+import RencanaProduksi from '@/views/ppic/RencanaProduksi.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -15,6 +16,7 @@ const router = createRouter({
     { path: '/ppic', component: DashboardPPIC },
     { path: '/ppic/master-produk', component: MasterProduk },
     { path: '/produksi', component: DashboardProduksi },
+    { path: '/ppic/rencana-produksi', component: RencanaProduksi },
   ],
 })
 
