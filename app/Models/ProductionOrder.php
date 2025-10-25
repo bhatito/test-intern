@@ -32,21 +32,15 @@ class ProductionOrder extends Model
     protected $casts = [
         'mulai_pada' => 'datetime',
         'selesai_pada' => 'datetime',
+        'target_jumlah' => 'integer',
+        'jumlah_aktual' => 'integer',
+        'jumlah_reject' => 'integer',
     ];
 
     /**
      * 🔹 Generate UUID & nomor order otomatis
      */
-    protected static function booted()
-    {
-        static::creating(function ($order) {
-            if (!$order->nomor_order) {
-                $latest = self::latest('created_at')->first();
-                $no = $latest ? intval(substr($latest->nomor_order, -4)) + 1 : 1;
-                $order->nomor_order = 'ORD-' . str_pad($no, 4, '0', STR_PAD_LEFT);
-            }
-        });
-    }
+
 
     /**
      * 🔗 Relasi ke Rencana Produksi
@@ -91,14 +85,29 @@ class ProductionOrder extends Model
     /**
      * 🧠 Accessor label status agar tampil lebih ramah di UI
      */
-    public function getStatusLabelAttribute()
+
+
+    public static function booted()
     {
-        return match ($this->status) {
-            'menunggu' => 'Menunggu Dikerjakan',
-            'dikerjakan' => 'Sedang Dikerjakan',
-            'selesai' => 'Selesai',
-            default => ucfirst($this->status),
-        };
+        static::creating(function ($order) {
+            if (!$order->nomor_order) {
+                $latest = self::latest('created_at')->first();
+                $no = $latest ? intval(substr($latest->nomor_order, -4)) + 1 : 1;
+                $order->nomor_order = 'ORD-' . str_pad($no, 4, '0', STR_PAD_LEFT);
+            }
+        });
+
+        static::updating(function ($model) {
+            // Auto-set selesai_pada ketika status jadi selesai
+            if ($model->isDirty('status') && $model->status === 'selesai') {
+                $model->selesai_pada = now();
+            }
+
+            // Auto-set mulai_pada ketika status jadi dalam_proses
+            if ($model->isDirty('status') && $model->status === 'dalam_proses' && !$model->mulai_pada) {
+                $model->mulai_pada = now();
+            }
+        });
     }
 
     /**

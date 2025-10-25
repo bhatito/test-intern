@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ManagerApprovalController;
 use App\Http\Controllers\Api\MasterProductController;
+use App\Http\Controllers\Api\ProductionOrderController;
 use App\Http\Controllers\Api\ProductionPlanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,5 +30,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/produksi/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard Produksi']));
         Route::get('/manager/approvals', [ManagerApprovalController::class, 'index']);
         Route::put('/manager/approvals/{plan}', [ManagerApprovalController::class, 'update']);
+        Route::get('/production-orders', [ProductionOrderController::class, 'index']);
+        Route::get('/production-orders/stats', [ProductionOrderController::class, 'stats']);
+        Route::get('/production-orders/{order}', [ProductionOrderController::class, 'show']);
+        Route::put('/production-orders/{order}/start', [ProductionOrderController::class, 'start']);
+        Route::put('/production-orders/{order}/complete', [ProductionOrderController::class, 'complete']);
     });
 });
