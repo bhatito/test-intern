@@ -12,7 +12,7 @@ const errorMsg = ref('')
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await axios.get('/api/master-products')
+    const res = await axios.get('/api/ppic/master-products')
     produkList.value = res.data
   } catch (e) {
     console.error(e)

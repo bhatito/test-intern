@@ -9,6 +9,7 @@ import RencanaProduksi from '@/views/ppic/RencanaProduksi.vue'
 import ApprovalRencana from '@/views/produksi/ApprovalRencana.vue'
 import OrderProduksi from '@/views/produksi/OrderProduksi.vue'
 import LaporanProduksi from '@/views/produksi/LaporanProduksi.vue'
+import HistoryRencana from '../views/ppic/HistoryRencana.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -45,6 +46,15 @@ const router = createRouter({
       component: RencanaProduksi,
       meta: { requiresAuth: true, department: 'ppic' }
     },
+    { 
+      path: '/ppic/history-rencana', 
+      component: HistoryRencana,
+      meta: { 
+        requiresAuth: true, 
+        department: 'ppic',
+        role: 'managerppic' // HANYA MANAGER PPIC YANG BISA AKSES
+      }
+    },
     
     // 🔹 Produksi Routes
     { 
@@ -55,7 +65,11 @@ const router = createRouter({
     { 
       path: '/produksi/persetujuan', 
       component: ApprovalRencana,
-      meta: { requiresAuth: true, department: 'produksi' }
+      meta: { 
+        requiresAuth: true, 
+        department: 'produksi',
+        role: 'managerproduksi' // HANYA MANAGER PRODUKSI YANG BISA AKSES
+      }
     },
     { 
       path: '/produksi/order-produksi', 
@@ -76,7 +90,7 @@ const router = createRouter({
   ],
 })
 
-// Navigation Guard
+// Enhanced Navigation Guard dengan Role Checking
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -111,6 +125,27 @@ router.beforeEach((to, from, next) => {
       } else {
         next('/')
       }
+      return
+    }
+
+    // Check role authorization untuk routes yang membutuhkan role spesifik
+    if (to.meta.role && user.role !== to.meta.role) {
+      // User tidak memiliki role yang diperlukan
+      
+      // Untuk PPIC: Jika staff mencoba akses fitur manager, redirect ke rencana produksi
+      if (user.department === 'ppic' && user.role === 'staffppic') {
+        next('/ppic/rencana-produksi')
+        return
+      }
+      
+      // Untuk Produksi: Jika staff mencoba akses fitur manager, redirect ke order produksi
+      if (user.department === 'produksi' && user.role === 'staffproduksi') {
+        next('/produksi/order-produksi')
+        return
+      }
+      
+      // Default fallback - redirect ke dashboard department
+      next(`/${user.department}`)
       return
     }
   }

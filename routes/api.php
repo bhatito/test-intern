@@ -17,14 +17,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // 🔸 Khusus PPIC
-    Route::middleware('department:ppic')->group(function () {
-        Route::get('/ppic/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard PPIC']));
+    // Di routes/api.php - PERBAIKI ROUTE PPIC
+    Route::prefix('ppic')->middleware('department:ppic')->group(function () {
+        Route::get('/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard PPIC']));
+
+        // Master Products
         Route::apiResource('master-products', MasterProductController::class);
+
+        // Production Plans
         Route::get('/production-plans', [ProductionPlanController::class, 'index']);
+        Route::get('/production-plans/statistics', [ProductionPlanController::class, 'statistics']);
         Route::post('/production-plans', [ProductionPlanController::class, 'store']);
+        Route::get('/production-plans/{plan}', [ProductionPlanController::class, 'show']);
+        Route::put('/production-plans/{plan}', [ProductionPlanController::class, 'update']);
         Route::delete('/production-plans/{plan}', [ProductionPlanController::class, 'destroy']);
         Route::put('/production-plans/{plan}/submit', [ProductionPlanController::class, 'submit']);
-        Route::put('/production-plans/{plan}/cancel', [ProductionPlanController::class, 'destroy']);
+        Route::put('/production-plans/{plan}/cancel', [ProductionPlanController::class, 'cancelSubmission']); // PERBAIKI INI
+        Route::get('/production-plans/{plan}/history', [ProductionPlanController::class, 'history']);
     });
 
     // 🔸 Khusus Produksi

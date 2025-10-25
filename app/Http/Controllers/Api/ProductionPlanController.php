@@ -390,4 +390,28 @@ class ProductionPlanController extends Controller
             ], 500);
         }
     }
+
+    // Di ProductionPlanController - tambahkan method ini
+
+    /** 📜 Get history untuk rencana tertentu */
+    public function history(ProductionPlan $plan)
+    {
+        try {
+            $histories = $plan->histories()
+                ->with('user')
+                ->orderBy('waktu_aksi', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $histories,
+                'message' => 'History rencana berhasil diambil'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil history: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

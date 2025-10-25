@@ -19,7 +19,7 @@ const selectedStatus = ref('')
 // 🔹 Ambil daftar produk dari master produk
 const loadProduk = async () => {
   try {
-    const res = await axios.get('/api/master-products')
+    const res = await axios.get('/api/ppic/master-products')
     produkList.value = res.data.data || res.data
   } catch (err) {
     console.error('Gagal memuat produk:', err)
@@ -31,7 +31,7 @@ const loadRencana = async () => {
   loading.value = true
   try {
     const params = selectedStatus.value ? { status: selectedStatus.value } : {}
-    const res = await axios.get('/api/production-plans', { params })
+    const res = await axios.get('/api/ppic/production-plans', { params })
     rencanaList.value = res.data.data || res.data
   } catch (err) {
     console.error('Gagal memuat rencana:', err)
@@ -65,7 +65,7 @@ const submitForm = async () => {
 
   try {
     loading.value = true
-    await axios.post('/api/production-plans', form.value)
+    await axios.post('/api/ppic/production-plans', form.value)
     
     // Reset form
     form.value = { produk_id: '', jumlah: '', batas_selesai: '', catatan: '' }
@@ -91,7 +91,7 @@ const deleteRencana = async (rencana) => {
   if (!confirm(`Yakin menghapus rencana ${rencana.nomor_rencana}?`)) return
   
   try {
-    await axios.delete(`/api/production-plans/${rencana.id}`)
+    await axios.delete(`/api/ppic/production-plans/${rencana.id}`)
     successMsg.value = 'Rencana produksi berhasil dihapus'
     await loadRencana()
     
@@ -108,7 +108,7 @@ const submitRencana = async (rencana) => {
   if (!confirm(`Ajukan rencana ${rencana.nomor_rencana} untuk persetujuan Manager Produksi?`)) return
   
   try {
-    await axios.put(`/api/production-plans/${rencana.id}/submit`)
+    await axios.put(`/api/ppic/production-plans/${rencana.id}/submit`)
     successMsg.value = 'Rencana berhasil diajukan untuk persetujuan'
     await loadRencana()
     
@@ -125,7 +125,7 @@ const cancelSubmission = async (rencana) => {
   if (!confirm(`Batalkan pengajuan rencana ${rencana.nomor_rencana}?`)) return
   
   try {
-    await axios.put(`/api/production-plans/${rencana.id}/cancel`)
+    await axios.put(`/api/ppic/production-plans/${rencana.id}/cancel`)
     successMsg.value = 'Pengajuan rencana berhasil dibatalkan'
     await loadRencana()
     
