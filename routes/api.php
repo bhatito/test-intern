@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ManagerApprovalController;
 use App\Http\Controllers\Api\MasterProductController;
 use App\Http\Controllers\Api\ProductionOrderController;
 use App\Http\Controllers\Api\ProductionPlanController;
+use App\Http\Controllers\DashboardPPICController;
 use App\Http\Controllers\ProductionReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,7 +21,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // 🔸 Khusus PPIC
     // Di routes/api.php - PERBAIKI ROUTE PPIC
     Route::prefix('ppic')->middleware('department:ppic')->group(function () {
-        Route::get('/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard PPIC']));
+        // Route::get('/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard PPIC']));
+
+        Route::get('/dashboard', [DashboardPPICController::class, 'index']);
+
 
         // Master Products
         Route::apiResource('master-products', MasterProductController::class);
