@@ -1,50 +1,39 @@
 <script setup>
-import axios from 'axios'
-import { useAuth } from '@/stores/auth'
-
-const auth = useAuth()
-
-// Fungsi logout
-const logout = async () => {
-  try {
-    await axios.post('/api/logout')
-  } catch (e) {
-    console.error(e)
-  } finally {
-    // Bersihkan data lokal
-    auth.logout()
-    // Redirect ke halaman utama / pilih login
-    window.location.assign('/')
-  }
-}
+import ProduksiLayout from '@/layouts/ProduksiLayout.vue'
 </script>
 
 <template>
-  <div class="min-h-dvh bg-gray-50 flex flex-col">
-    <!-- Header -->
-    <header class="flex items-center justify-between bg-white shadow px-6 py-4">
-      <h1 class="text-xl font-bold text-gray-800">Dashboard PRODUKSI</h1>
+  <ProduksiLayout>
+    <div class="bg-white rounded-2xl shadow p-6">
+      <h2 class="text-lg font-semibold mb-2">
+        Selamat datang di Dashboard Produksi 👋
+      </h2>
+      <p class="text-gray-600 mb-6">
+        Anda berhasil login sebagai <strong>Staff / Manager Produksi</strong>.
+      </p>
 
-      <div class="flex items-center gap-4">
-        <p class="text-gray-700 text-sm font-medium">
-          {{ auth.user?.name }}
-          <span class="text-gray-400 text-xs">({{ auth.user?.department }})</span>
-        </p>
-        <button
-          @click="logout"
-          class="px-4 py-1.5 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600 transition"
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          class="bg-gray-50 border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow transition"
         >
-          Logout
-        </button>
-      </div>
-    </header>
+          <p class="text-gray-500 text-sm">Total Order</p>
+          <p class="text-3xl font-bold text-gray-800 mt-1">0</p>
+        </div>
 
-    <!-- Konten utama -->
-    <main class="flex-1 p-6">
-      <div class="bg-white rounded-2xl shadow p-6">
-        <h2 class="text-lg font-semibold mb-2">Selamat datang di Dashboard PRODUKSI 👋</h2>
-        <p class="text-gray-600">Anda berhasil login sebagai {{ auth.user?.role }}.</p>
+        <div
+          class="bg-gray-50 border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow transition"
+        >
+          <p class="text-gray-500 text-sm">Sedang Dikerjakan</p>
+          <p class="text-3xl font-bold text-gray-800 mt-1">0</p>
+        </div>
+
+        <div
+          class="bg-gray-50 border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow transition"
+        >
+          <p class="text-gray-500 text-sm">Selesai Bulan Ini</p>
+          <p class="text-3xl font-bold text-gray-800 mt-1">0</p>
+        </div>
       </div>
-    </main>
-  </div>
+    </div>
+  </ProduksiLayout>
 </template>

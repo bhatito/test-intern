@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ManagerApprovalController;
 use App\Http\Controllers\Api\MasterProductController;
 use App\Http\Controllers\Api\ProductionPlanController;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // 🔸 Khusus Produksi
     Route::middleware('department:produksi')->group(function () {
         Route::get('/produksi/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard Produksi']));
-        // Tambahkan route lain untuk Produksi di sini
+        Route::get('/manager/approvals', [ManagerApprovalController::class, 'index']);
+        Route::put('/manager/approvals/{plan}', [ManagerApprovalController::class, 'update']);
     });
 });
