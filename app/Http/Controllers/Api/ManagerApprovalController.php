@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ProductionPlan;
 use App\Models\ProductionOrder;
+use App\Services\ProductionPlanHistoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,16 +25,19 @@ class ManagerApprovalController extends Controller
         return response()->json($plans);
     }
 
-    /** ✅ Approve atau ❌ Tolak */
+    /** ✅ Approve atau ❌ Tolak - DENGAN HISTORY TRACKING */
     public function update(Request $request, ProductionPlan $plan)
     {
         DB::beginTransaction();
         try {
+            // Simpan status SEBELUM update
+            $statusSebelum = $plan->status;
+
             // Validasi status rencana
-            if ($plan->status !== 'menunggu_persetujuan') {
+            if ($statusSebelum !== 'menunggu_persetujuan') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Rencana ini sudah diproses sebelumnya. Status saat ini: ' . $plan->status
+                    'message' => 'Rencana ini sudah diproses sebelumnya. Status saat ini: ' . $statusSebelum
                 ], 422);
             }
 
@@ -43,6 +47,8 @@ class ManagerApprovalController extends Controller
             ]);
 
             if ($validated['status'] === 'disetujui') {
+                // APPROVE PROCESS
+
                 // Update rencana menjadi disetujui
                 $plan->update([
                     'status' => 'disetujui',
@@ -51,6 +57,13 @@ class ManagerApprovalController extends Controller
                     'batas_selesai' => now()->addDays(7),
                     'catatan' => $validated['catatan'] ?? null,
                 ]);
+
+                // Catat history persetujuan
+                ProductionPlanHistoryService::catatPersetujuan(
+                    $plan,
+                    $statusSebelum,
+                    $validated['catatan'] ?? null
+                );
 
                 // Buat order produksi otomatis
                 $productionOrder = ProductionOrder::create([
@@ -63,8 +76,12 @@ class ManagerApprovalController extends Controller
                     'dikerjakan_oleh' => null,
                 ]);
 
-                // Update status rencana menjadi 'menjadi_order' (opsional)
+                // Update status rencana menjadi 'menjadi_order'
+                $statusSebelumOrder = $plan->status; // Simpan status sebelum update ke menjadi_order
                 $plan->update(['status' => 'menjadi_order']);
+
+                // Catat history menjadi order produksi
+                ProductionPlanHistoryService::catatMenjadiOrder($plan, $statusSebelumOrder);
 
                 DB::commit();
 
@@ -79,13 +96,22 @@ class ManagerApprovalController extends Controller
                     ]
                 ]);
             } else {
-                // Jika ditolak
+                // REJECT PROCESS
+
+                // Update rencana menjadi ditolak
                 $plan->update([
                     'status' => 'ditolak',
                     'disetujui_oleh' => Auth::id(),
                     'ditolak_pada' => now(),
                     'catatan' => $validated['catatan'] ?? 'Tidak ada catatan',
                 ]);
+
+                // Catat history penolakan
+                ProductionPlanHistoryService::catatPenolakan(
+                    $plan,
+                    $statusSebelum,
+                    $validated['catatan'] ?? 'Tidak ada alasan'
+                );
 
                 DB::commit();
 
@@ -101,6 +127,7 @@ class ManagerApprovalController extends Controller
             Log::error('Error updating production plan approval: ' . $e->getMessage(), [
                 'plan_id' => $plan->id,
                 'user_id' => Auth::id(),
+                'status_sebelum' => $statusSebelum ?? 'unknown',
                 'request_data' => $request->all()
             ]);
 
