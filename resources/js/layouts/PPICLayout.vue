@@ -117,8 +117,6 @@ const menuItems = computed(() => {
         path: '/ppic/rencana-produksi', 
         label: 'Rencana Produksi', 
         icon: '📝',
-        show: true,
-        badge: pendingApprovals.value > 0 ? pendingApprovals.value : null
       },
       { 
         path: '/ppic/history-rencana', 
@@ -199,14 +197,7 @@ onMounted(() => {
         <!-- User info + actions -->
         <div class="flex items-center gap-4">
           <!-- Notifikasi Badge (hanya manager) -->
-          <div 
-            v-if="isManagerPPIC && pendingApprovals > 0 && !loadingApprovals"
-            class="hidden sm:flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5"
-          >
-            <span class="text-orange-600 text-sm font-medium">
-              ⏳ {{ pendingApprovals }} menunggu persetujuan
-            </span>
-          </div>
+          
 
           <!-- Loading State untuk Manager -->
           <div 
@@ -278,27 +269,10 @@ onMounted(() => {
           </RouterLink>
 
           <!-- Mobile Notifikasi (hanya manager) -->
-          <div 
-            v-if="isManagerPPIC && pendingApprovals > 0 && !loadingApprovals"
-            class="mt-2 px-4 py-3 bg-orange-50 border border-orange-200 rounded-lg"
-          >
-            <p class="text-orange-700 text-sm font-medium flex items-center gap-2">
-              <span>⏳</span>
-              {{ pendingApprovals }} rencana menunggu persetujuan
-            </p>
-          </div>
+         
 
           <!-- Mobile Loading -->
-          <div 
-            v-if="isManagerPPIC && loadingApprovals"
-            class="mt-2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg"
-          >
-            <p class="text-gray-600 text-sm flex items-center gap-2">
-              <span>🔄</span>
-              Memuat notifikasi...
-            </p>
-          </div>
-
+         
           <!-- Mobile Logout -->
           <button
             @click="logout"
