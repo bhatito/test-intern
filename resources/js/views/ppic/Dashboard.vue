@@ -1,50 +1,37 @@
 <script setup>
-import axios from 'axios'
+import PPICLayout from '@/layouts/PPICLayout.vue'
 import { useAuth } from '@/stores/auth'
 
 const auth = useAuth()
-
-// Fungsi logout
-const logout = async () => {
-  try {
-    await axios.post('/api/logout')
-  } catch (e) {
-    console.error(e)
-  } finally {
-    // Bersihkan data lokal
-    auth.logout()
-    // Redirect ke halaman utama / pilih login
-    window.location.assign('/')
-  }
-}
 </script>
 
 <template>
-  <div class="min-h-dvh bg-gray-50 flex flex-col">
-    <!-- Header -->
-    <header class="flex items-center justify-between bg-white shadow px-6 py-4">
-      <h1 class="text-xl font-bold text-gray-800">Dashboard PPIC</h1>
+  <PPICLayout>
+    <div class="bg-white rounded-2xl shadow p-6">
+      <h2 class="text-lg font-semibold mb-2">Selamat datang di Dashboard PPIC 👋</h2>
+      <p class="text-gray-600 mb-6">
+        Anda login sebagai <b>{{ auth.user?.role || '-' }}</b>.
+      </p>
 
-      <div class="flex items-center gap-4">
-        <p class="text-gray-700 text-sm font-medium">
-          {{ auth.user?.name }}
-          <span class="text-gray-400 text-xs">({{ auth.user?.department }})</span>
-        </p>
-        <button
-          @click="logout"
-          class="px-4 py-1.5 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600 transition"
+      <div class="grid md:grid-cols-3 gap-6">
+        <RouterLink
+          to="/ppic/master-produk"
+          class="bg-blue-50 border border-blue-200 rounded-xl p-6 hover:bg-blue-100 transition"
         >
-          Logout
-        </button>
-      </div>
-    </header>
+          <h3 class="font-semibold text-blue-700">Master Produk</h3>
+          <p class="text-sm text-gray-600 mt-1">Kelola data produk perusahaan</p>
+        </RouterLink>
 
-    <!-- Konten utama -->
-    <main class="flex-1 p-6">
-      <div class="bg-white rounded-2xl shadow p-6">
-        <h2 class="text-lg font-semibold mb-2">Selamat datang di Dashboard PPIC 👋</h2>
-        <p class="text-gray-600">Anda berhasil login sebagai {{ auth.user?.role }}.</p>
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 opacity-70">
+          <h3 class="font-semibold text-gray-700">Rencana Produksi</h3>
+          <p class="text-sm text-gray-600 mt-1">Fitur akan datang</p>
+        </div>
+
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 opacity-70">
+          <h3 class="font-semibold text-gray-700">Laporan Produksi</h3>
+          <p class="text-sm text-gray-600 mt-1">Fitur akan datang</p>
+        </div>
       </div>
-    </main>
-  </div>
+    </div>
+  </PPICLayout>
 </template>

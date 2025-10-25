@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\MasterProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +16,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // 🔸 Khusus PPIC
     Route::middleware('department:ppic')->group(function () {
         Route::get('/ppic/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard PPIC']));
-        // Tambahkan route lain untuk PPIC di sini
+        Route::apiResource('master-products', MasterProductController::class);
     });
 
     // 🔸 Khusus Produksi

@@ -1,40 +1,40 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '@/stores/auth'
 import ChooseLogin from '@/views/ChooseLogin.vue'
 import LoginPPIC from '@/views/LoginPPIC.vue'
 import LoginProduksi from '@/views/LoginProduksi.vue'
-
-const DashboardPPIC = () => import('@/views/ppic/Dashboard.vue')
-const DashboardProduksi = () => import('@/views/produksi/Dashboard.vue')
+import DashboardPPIC from '@/views/ppic/Dashboard.vue'
+import DashboardProduksi from '@/views/produksi/Dashboard.vue'
+import MasterProduk from '@/views/ppic/MasterProduk.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', component: ChooseLogin, meta: { guestOnly: true } },
-    { path: '/login/ppic', component: LoginPPIC, meta: { guestOnly: true } },
-    { path: '/login/produksi', component: LoginProduksi, meta: { guestOnly: true } },
-
-    { path: '/ppic', component: DashboardPPIC, meta: { requiresAuth: true, department: 'ppic' } },
-    { path: '/produksi', component: DashboardProduksi, meta: { requiresAuth: true, department: 'produksi' } },
-
-    { path: '/:pathMatch(.*)*', redirect: '/' },
+    { path: '/', component: ChooseLogin },
+    { path: '/login/ppic', component: LoginPPIC },
+    { path: '/login/produksi', component: LoginProduksi },
+    { path: '/ppic', component: DashboardPPIC },
+    { path: '/ppic/master-produk', component: MasterProduk },
+    { path: '/produksi', component: DashboardProduksi },
   ],
 })
 
-router.beforeEach((to) => {
-  const auth = useAuth()
-  if (to.meta.guestOnly && auth.isAuthenticated) {
-    return auth.department === 'ppic' ? '/ppic' : '/produksi'
+// (opsional) guard: hanya user PPIC boleh ke halaman PPIC
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+
+  if (to.path.startsWith('/ppic') && user.department !== 'ppic') {
+    return next('/')
   }
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return to.meta.department === 'ppic' ? '/login/ppic' : '/login/produksi'
+  if (to.path.startsWith('/produksi') && user.department !== 'produksi') {
+    return next('/')
   }
-  if (to.meta.requiresAuth && auth.isAuthenticated) {
-    const dept = to.meta.department
-    if (dept && auth.department !== dept) {
-      return auth.department === 'ppic' ? '/ppic' : '/produksi'
-    }
+
+  if (to.meta.requiresAuth && !token) {
+    return next('/')
   }
+
+  next()
 })
 
 export default router
