@@ -26,12 +26,12 @@ const fetchNotifications = async () => {
   try {
     if (isManagerProduksi.value) {
       // Ambil jumlah persetujuan yang pending
-      const approvalsResponse = await axios.get('/api/persetujuan/pending-count')
+      const approvalsResponse = await axios.get('/api/produksi/dashboard/pending-count')
       pendingApprovals.value = approvalsResponse.data.count || 0
     }
 
     // Ambil jumlah order yang sudah disetujui (untuk semua user produksi)
-    const ordersResponse = await axios.get('/api/order-produksi/approved-count')
+    const ordersResponse = await axios.get('/api/produksi/dashboard/approved-orders-count')
     approvedOrders.value = ordersResponse.data.count || 0
   } catch (error) {
     console.error('Error fetching notifications:', error)

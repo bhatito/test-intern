@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductionOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -160,5 +161,12 @@ class DashboardProduksiController extends Controller
             'selesai' => 0,
             'selesai_bulan_ini' => 0
         ];
+    }
+
+
+    public function pendingCount(Request $request)
+    {
+        $count = ProductionOrder::where('status', 'menunggu')->count();
+        return response()->json(['count' => $count]);
     }
 }

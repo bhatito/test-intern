@@ -51,6 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard/stats', [DashboardProduksiController::class, 'getDashboardStats']);
         Route::get('/dashboard/pending-approvals-count', [DashboardProduksiController::class, 'getPendingApprovalsCount']);
         Route::get('/dashboard/approved-orders-count', [DashboardProduksiController::class, 'getApprovedOrdersCount']);
+        Route::get('/dashboard/pending-count', [DashboardProduksiController::class, 'pendingCount']);
+
+        // Route::get('/order-produksi/approved-count', [PersetujuanController::class, 'approvedCount']);
 
         // Manager Approvals
         Route::get('/manager/approvals', [ManagerApprovalController::class, 'index']);
