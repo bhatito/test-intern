@@ -8,29 +8,22 @@ const auth = useAuth()
 const route = useRoute()
 const mobileOpen = ref(false)
 
-// State untuk notifikasi
 const pendingApprovals = ref(0)
 const approvedOrders = ref(0)
 const notificationInterval = ref(null)
 
-// Tampilkan menu Persetujuan hanya utk manager produksi
 const isManagerProduksi = computed(() =>
   auth.user?.department === 'produksi' && auth.user?.role === 'managerpproduksi'
 )
 
-// helper active route
 const isActive = (path) => route.path === path
 
-// Fungsi untuk mengambil data notifikasi
 const fetchNotifications = async () => {
   try {
     if (isManagerProduksi.value) {
-      // Ambil jumlah persetujuan yang pending
       const approvalsResponse = await axios.get('/api/produksi/dashboard/pending-count')
       pendingApprovals.value = approvalsResponse.data.count || 0
     }
-
-    // Ambil jumlah order yang sudah disetujui (untuk semua user produksi)
     const ordersResponse = await axios.get('/api/produksi/dashboard/approved-orders-count')
     approvedOrders.value = ordersResponse.data.count || 0
   } catch (error) {
@@ -38,7 +31,6 @@ const fetchNotifications = async () => {
   }
 }
 
-// Total notifikasi
 const totalNotifications = computed(() => {
   let total = 0
   if (isManagerProduksi.value) {
@@ -48,17 +40,12 @@ const totalNotifications = computed(() => {
   return total
 })
 
-// Format badge count
 const formatBadgeCount = (count) => {
   return count > 99 ? '99+' : count
 }
 
-// Setup polling untuk notifikasi
 const startNotificationPolling = () => {
-  // Fetch segera setelah mounted
   fetchNotifications()
-  
-  // Setup interval untuk polling setiap 30 detik
   notificationInterval.value = setInterval(fetchNotifications, 30000)
 }
 
@@ -68,7 +55,6 @@ const logout = async () => {
   } catch (e) {
     console.error(e)
   } finally {
-    // Hentikan polling sebelum logout
     if (notificationInterval.value) {
       clearInterval(notificationInterval.value)
     }
@@ -77,7 +63,6 @@ const logout = async () => {
   }
 }
 
-// Menu items dengan notifikasi badge
 const menuItems = computed(() => {
   const items = [
     { 
@@ -114,7 +99,6 @@ const menuItems = computed(() => {
   return items
 })
 
-// Lifecycle hooks
 onMounted(() => {
   startNotificationPolling()
 })
@@ -128,12 +112,9 @@ onUnmounted(() => {
 
 <template>
   <div class="min-h-dvh bg-gray-50 flex flex-col">
-    <!-- HEADER -->
     <header class="bg-white shadow-sm border-b sticky top-0 z-30">
       <div class="max-w-7xl mx-auto">
-        <!-- Top Bar -->
         <div class="flex justify-between items-center px-4 sm:px-6 py-4">
-          <!-- Brand -->
           <div class="flex items-center gap-3">
             <h1 class="text-lg sm:text-xl font-bold text-gray-800 cursor-pointer flex items-center gap-2">
               <span class="text-green-600">🏭</span>
@@ -142,8 +123,6 @@ onUnmounted(() => {
                 {{ auth.user?.role }}
               </span>
             </h1>
-
-            <!-- Desktop Navigation -->
             <nav class="hidden md:flex gap-1 ml-6 text-sm font-medium">
               <RouterLink
                 v-for="item in menuItems"
@@ -156,7 +135,6 @@ onUnmounted(() => {
               >
                 <span>{{ item.icon }}</span>
                 {{ item.label }}
-                <!-- Badge Notifikasi -->
                 <span 
                   v-if="item.badge > 0"
                   class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1"
@@ -166,17 +144,13 @@ onUnmounted(() => {
               </RouterLink>
             </nav>
           </div>
-
-          <!-- User Info & Actions -->
           <div class="flex items-center gap-4">
-            <!-- Notification Bell (Optional) -->
             <div v-if="totalNotifications > 0" class="relative">
               <div class="w-2 h-2 bg-red-500 rounded-full absolute -top-0 -right-0 animate-pulse"></div>
               <span class="text-gray-600">
                 🔔
               </span>
             </div>
-
             <div class="hidden sm:block text-right">
               <p class="text-gray-700 text-sm font-medium">
                 {{ auth.user?.name }}
@@ -185,8 +159,6 @@ onUnmounted(() => {
                 {{ auth.user?.department }} • {{ auth.user?.role }}
               </p>
             </div>
-
-            <!-- Mobile menu button -->
             <button
               class="md:hidden p-2 rounded-lg border hover:bg-gray-50 transition-colors relative"
               @click="mobileOpen = !mobileOpen"
@@ -197,7 +169,6 @@ onUnmounted(() => {
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-              <!-- Badge untuk mobile menu -->
               <span 
                 v-if="totalNotifications > 0"
                 class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[16px] h-[16px] flex items-center justify-center"
@@ -205,8 +176,6 @@ onUnmounted(() => {
                 {{ formatBadgeCount(totalNotifications) }}
               </span>
             </button>
-
-            <!-- Logout button -->
             <button
               @click="logout"
               class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
@@ -219,8 +188,6 @@ onUnmounted(() => {
             </button>
           </div>
         </div>
-
-        <!-- Mobile Dropdown Menu -->
         <div v-if="mobileOpen" class="md:hidden bg-white border-t shadow-lg">
           <nav class="flex flex-col px-4 py-3 gap-1 text-sm font-medium">
             <RouterLink
@@ -235,7 +202,6 @@ onUnmounted(() => {
             >
               <span class="text-lg">{{ item.icon }}</span>
               {{ item.label }}
-              <!-- Badge Notifikasi untuk Mobile -->
               <span 
                 v-if="item.badge > 0"
                 class="ml-auto bg-red-500 text-white text-xs rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-1"
@@ -243,8 +209,6 @@ onUnmounted(() => {
                 {{ formatBadgeCount(item.badge) }}
               </span>
             </RouterLink>
-
-            <!-- Mobile Logout -->
             <button
               @click="logout"
               class="mt-3 px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-3 text-left"
@@ -259,15 +223,11 @@ onUnmounted(() => {
         </div>
       </div>
     </header>
-
-    <!-- MAIN CONTENT -->
     <main class="flex-1 p-4 sm:p-6">
       <div class="max-w-7xl mx-auto w-full">
         <slot />
       </div>
     </main>
-
-    <!-- FOOTER -->
     <footer class="text-center text-gray-500 text-xs sm:text-sm py-4 border-t bg-white">
       &copy; {{ new Date().getFullYear() }} Sistem Produksi — 
       <span class="capitalize">{{ auth.user?.role }}</span> Access

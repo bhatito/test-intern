@@ -30,8 +30,6 @@ const router = createRouter({
       component: LoginProduksi,
       meta: { requiresAuth: false }
     },
-    
-    // 🔹 PPIC Routes
     { 
       path: '/ppic', 
       component: DashboardPPIC,
@@ -65,8 +63,6 @@ const router = createRouter({
         role: 'managerppic' 
       }
     },
-    
-    // 🔹 Produksi Routes
     { 
       path: '/produksi', 
       component: DashboardProduksi,
@@ -92,10 +88,9 @@ const router = createRouter({
       meta: { 
         requiresAuth: true, 
         department: 'produksi',
-        role: 'managerpproduksi'  }
+        role: 'managerpproduksi' 
+      }
     },
-
-    
     {
       path: '/:pathMatch(.*)*',
       redirect: '/'
@@ -103,20 +98,16 @@ const router = createRouter({
   ],
 })
 
-// Enhanced Navigation Guard dengan Role Checking
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
-  // Jika route membutuhkan authentication tapi user belum login
   if (to.meta.requiresAuth && !token) {
     next('/')
     return
   }
 
-  // Jika user sudah login tapi mencoba akses login page
   if ((to.path === '/login/ppic' || to.path === '/login/produksi' || to.path === '/') && token) {
-    // Redirect ke dashboard sesuai department
     if (user.department === 'ppic') {
       next('/ppic')
     } else if (user.department === 'produksi') {
@@ -127,10 +118,8 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  // Check department authorization untuk protected routes
   if (to.meta.requiresAuth && to.meta.department) {
     if (user.department !== to.meta.department) {
-      // Redirect ke dashboard sesuai department user
       if (user.department === 'ppic') {
         next('/ppic')
       } else if (user.department === 'produksi') {
@@ -141,23 +130,17 @@ router.beforeEach((to, from, next) => {
       return
     }
 
-    // Check role authorization untuk routes yang membutuhkan role spesifik
     if (to.meta.role && user.role !== to.meta.role) {
-      // User tidak memiliki role yang diperlukan
-      
-      // Untuk PPIC: Jika staff mencoba akses fitur manager, redirect ke rencana produksi
       if (user.department === 'ppic' && user.role === 'staffppic') {
         next('/ppic/rencana-produksi')
         return
       }
       
-      // Untuk Produksi: Jika staff mencoba akses fitur manager, redirect ke order produksi
       if (user.department === 'produksi' && user.role === 'staffproduksi') {
         next('/produksi/order-produksi')
         return
       }
       
-      // Default fallback - redirect ke dashboard department
       next(`/${user.department}`)
       return
     }
