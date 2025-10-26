@@ -9,10 +9,8 @@ const selectedPlan = ref(null)
 const planHistory = ref([])
 const showHistoryModal = ref(false)
 
-// Filter options - hanya search query untuk nomor rencana
 const searchQuery = ref('')
 
-// Load semua rencana produksi
 const loadRencana = async () => {
   loading.value = true
   try {
@@ -26,7 +24,6 @@ const loadRencana = async () => {
   }
 }
 
-// Load history untuk rencana tertentu
 const loadPlanHistory = async (plan) => {
   selectedPlan.value = plan
   try {
@@ -39,7 +36,6 @@ const loadPlanHistory = async (plan) => {
   }
 }
 
-// Format tanggal
 const formatDate = (dateString) => {
   if (!dateString) return '-'
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -51,7 +47,6 @@ const formatDate = (dateString) => {
   })
 }
 
-// Format waktu relative
 const formatTimeAgo = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
@@ -69,7 +64,6 @@ const formatTimeAgo = (dateString) => {
   return formatDate(dateString)
 }
 
-// Status badge dengan warna
 const getStatusBadge = (status) => {
   const statusConfig = {
     'draft': { class: 'bg-gray-100 text-gray-800', label: 'Draft' },
@@ -81,7 +75,6 @@ const getStatusBadge = (status) => {
   return statusConfig[status] || { class: 'bg-gray-100 text-gray-800', label: status }
 }
 
-// History action badge dengan warna
 const getActionBadge = (aksi) => {
   const actionConfig = {
     'dibuat': { class: 'bg-blue-100 text-blue-800', label: 'Dibuat', icon: '📝' },
@@ -96,7 +89,6 @@ const getActionBadge = (aksi) => {
   return actionConfig[aksi] || { class: 'bg-gray-100 text-gray-800', label: aksi, icon: '📋' }
 }
 
-// Filter rencana berdasarkan pencarian nomor rencana
 const filteredRencana = computed(() => {
   if (!searchQuery.value) {
     return rencanaList.value
@@ -108,7 +100,6 @@ const filteredRencana = computed(() => {
   )
 })
 
-// Statistik
 const statistics = computed(() => {
   return {
     total: rencanaList.value.length,
@@ -120,7 +111,6 @@ const statistics = computed(() => {
   }
 })
 
-// Reset filter
 const resetFilter = () => {
   searchQuery.value = ''
 }
@@ -133,7 +123,6 @@ onMounted(() => {
 <template>
   <PPICLayout>
     <div class="space-y-6">
-      <!-- HEADER -->
       <div class="bg-white rounded-xl shadow p-6">
         <div class="flex justify-between items-center mb-6">
           <div>
@@ -152,7 +141,7 @@ onMounted(() => {
           </button>
         </div>
 
-        <!-- STATISTICS -->
+      
         <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
           <div class="bg-blue-50 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-blue-600">{{ statistics.total }}</div>
@@ -180,7 +169,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- FILTER - HANYA SEARCH NOMOR RENCANA -->
         <div class="bg-gray-50 rounded-lg p-4 mb-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-2">
@@ -204,7 +192,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- DAFTAR RENCANA -->
       <div class="bg-white rounded-xl shadow">
         <div class="p-6 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-800">
@@ -216,13 +203,11 @@ onMounted(() => {
         </div>
 
         <div class="p-6">
-          <!-- Loading State -->
           <div v-if="loading" class="text-center py-8">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
             <p class="text-gray-500 mt-2">Memuat data history...</p>
           </div>
 
-          <!-- Empty State -->
           <div v-else-if="!filteredRencana.length" class="text-center py-8">
             <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -236,7 +221,6 @@ onMounted(() => {
             </p>
           </div>
 
-          <!-- Table -->
           <div v-else class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -297,10 +281,8 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- MODAL HISTORY -->
     <div v-if="showHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        <!-- Modal Header -->
         <div class="p-6 border-b border-gray-200">
           <div class="flex justify-between items-start">
             <div>
@@ -319,8 +301,7 @@ onMounted(() => {
             </button>
           </div>
         </div>
-
-        <!-- Modal Content -->
+        
         <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
           <div v-if="planHistory.length === 0" class="text-center py-8">
             <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

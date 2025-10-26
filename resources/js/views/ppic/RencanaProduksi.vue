@@ -1,5 +1,4 @@
 <script setup>
-// The script section remains unchanged
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import PPICLayout from '@/layouts/PPICLayout.vue'
@@ -17,7 +16,6 @@ const errorMsg = ref('')
 const successMsg = ref('')
 const selectedStatus = ref('')
 
-// 🔹 Ambil daftar produk dari master produk
 const loadProduk = async () => {
   try {
     const res = await axios.get('/api/ppic/master-products')
@@ -27,7 +25,6 @@ const loadProduk = async () => {
   }
 }
 
-// 🔹 Ambil daftar rencana produksi
 const loadRencana = async () => {
   loading.value = true
   try {
@@ -42,12 +39,10 @@ const loadRencana = async () => {
   }
 }
 
-// 🔹 Simpan rencana baru
 const submitForm = async () => {
   errorMsg.value = ''
   successMsg.value = ''
-  
-  // Validasi client-side
+
   if (!form.value.produk_id || !form.value.jumlah || !form.value.batas_selesai) {
     errorMsg.value = 'Harap lengkapi semua field yang wajib diisi'
     return
@@ -67,15 +62,12 @@ const submitForm = async () => {
   try {
     loading.value = true
     await axios.post('/api/ppic/production-plans', form.value)
-    
-    // Reset form
+
     form.value = { produk_id: '', jumlah: '', batas_selesai: '', catatan: '' }
     successMsg.value = 'Rencana produksi berhasil dibuat dan menunggu persetujuan Manager Produksi'
-    
-    // Reload data
+
     await loadRencana()
-    
-    // Hilangkan pesan sukses setelah 5 detik
+
     setTimeout(() => {
       successMsg.value = ''
     }, 5000)
@@ -87,7 +79,6 @@ const submitForm = async () => {
   }
 }
 
-// 🔹 Hapus rencana (jika masih draft atau menunggu persetujuan)
 const deleteRencana = async (rencana) => {
   if (!confirm(`Yakin menghapus rencana ${rencana.nomor_rencana}?`)) return
   
@@ -104,7 +95,6 @@ const deleteRencana = async (rencana) => {
   }
 }
 
-// 🔹 Ajukan rencana (dari draft ke menunggu persetujuan)
 const submitRencana = async (rencana) => {
   if (!confirm(`Ajukan rencana ${rencana.nomor_rencana} untuk persetujuan Manager Produksi?`)) return
   
@@ -121,7 +111,6 @@ const submitRencana = async (rencana) => {
   }
 }
 
-// 🔹 Batalkan pengajuan (dari menunggu persetujuan ke draft)
 const cancelSubmission = async (rencana) => {
   if (!confirm(`Batalkan pengajuan rencana ${rencana.nomor_rencana}?`)) return
   
@@ -138,7 +127,6 @@ const cancelSubmission = async (rencana) => {
   }
 }
 
-// 🔹 Format tanggal untuk display
 const formatDate = (dateString) => {
   if (!dateString) return '-'
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -148,7 +136,6 @@ const formatDate = (dateString) => {
   })
 }
 
-// 🔹 Status badge dengan warna yang sesuai
 const getStatusBadge = (status) => {
   const statusConfig = {
     'draft': { class: 'bg-gray-100 text-gray-800', label: 'Draft' },
@@ -161,13 +148,11 @@ const getStatusBadge = (status) => {
   return statusConfig[status] || { class: 'bg-gray-100 text-gray-800', label: status }
 }
 
-// 🔹 Filter rencana berdasarkan status
 const filteredRencana = computed(() => {
   if (!selectedStatus.value) return rencanaList.value
   return rencanaList.value.filter(rencana => rencana.status === selectedStatus.value)
 })
 
-// 🔹 Hitung statistik
 const statistics = computed(() => {
   const stats = {
     total: rencanaList.value.length,
@@ -180,7 +165,6 @@ const statistics = computed(() => {
   return stats
 })
 
-// 🔹 Tentukan tombol aksi berdasarkan status
 const getActionButtons = (rencana) => {
   const actions = []
   
@@ -235,7 +219,6 @@ onMounted(() => {
 <template>
   <PPICLayout>
     <div class="space-y-6 px-4 sm:px-6">
-      <!-- HEADER -->
       <div class="bg-white rounded-xl shadow p-4 sm:p-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
@@ -244,7 +227,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- STATISTICS -->
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4 mb-6">
           <div class="bg-blue-50 rounded-lg p-3 sm:p-4 text-center">
             <div class="text-xl sm:text-2xl font-bold text-blue-600">{{ statistics.total }}</div>
@@ -274,17 +256,14 @@ onMounted(() => {
       </div>
 
       <div class="grid lg:grid-cols-3 gap-4 sm:gap-6">
-        <!-- FORM TAMBAH RENCANA -->
         <div class="lg:col-span-1">
           <div class="bg-white rounded-xl shadow p-4 sm:p-6">
             <h2 class="text-base sm:text-lg font-semibold mb-4 text-gray-800">Buat Rencana Baru</h2>
 
-            <!-- PESAN SUKSES -->
             <div v-if="successMsg" class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
               <p class="text-sm sm:text-base text-green-800">{{ successMsg }}</p>
             </div>
 
-            <!-- PESAN ERROR -->
             <div v-if="errorMsg" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p class="text-sm sm:text-base text-red-800">{{ errorMsg }}</p>
             </div>
@@ -357,16 +336,13 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- DAFTAR RENCANA -->
         <div class="lg:col-span-2">
           <div class="bg-white rounded-xl shadow">
-            <!-- HEADER TABEL -->
             <div class="p-4 sm:p-6 border-b border-gray-200">
               <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 class="text-base sm:text-lg font-semibold text-gray-800">Daftar Rencana Produksi</h2>
                 
                 <div class="flex items-center gap-3 w-full sm:w-auto">
-                  <!-- FILTER STATUS -->
                   <select 
                     v-model="selectedStatus" 
                     class="flex-1 sm:flex-none border border-gray-300 rounded-lg p-2 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -378,8 +354,6 @@ onMounted(() => {
                     <option value="ditolak">Ditolak</option>
                     <option value="menjadi_order">Menjadi Order</option>
                   </select>
-
-                  <!-- TOMBOL RELOAD -->
                   <button 
                     @click="loadRencana" 
                     :disabled="loading"
@@ -394,7 +368,6 @@ onMounted(() => {
               </div>
             </div>
 
-            <!-- TABEL DAN CARD VIEW -->
             <div class="p-4 sm:p-6">
               <div v-if="loading" class="text-center py-8">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -410,7 +383,6 @@ onMounted(() => {
               </div>
 
               <div v-else>
-                <!-- TABLE VIEW (DESKTOP) -->
                 <div class="hidden md:block overflow-x-auto">
                   <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -467,7 +439,6 @@ onMounted(() => {
                   </table>
                 </div>
 
-                <!-- CARD VIEW (MOBILE) -->
                 <div class="md:hidden space-y-4">
                   <div 
                     v-for="rencana in filteredRencana" 

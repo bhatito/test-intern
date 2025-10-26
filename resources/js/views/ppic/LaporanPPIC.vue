@@ -12,7 +12,6 @@ const filterMinggu = ref(1)
 const filterStatus = ref('')
 const searchQuery = ref('')
 
-// Data untuk form filter
 const tahunList = computed(() => {
   const currentYear = new Date().getFullYear()
   return Array.from({ length: 5 }, (_, i) => currentYear - i)
@@ -35,7 +34,6 @@ const bulanList = [
 
 const mingguList = Array.from({ length: 5 }, (_, i) => ({ value: i + 1, label: `Minggu ${i + 1}` }))
 
-// ✅ WATCH: Auto reload ketika filter berubah
 watch([filterPeriode, filterTahun, filterBulan, filterMinggu, filterStatus], () => {
   loadRencana()
 })
@@ -73,7 +71,6 @@ const loadRencana = async () => {
   }
 }
 
-// Generate laporan rencana baru
 const generateLaporan = async () => {
   try {
     loading.value = true
@@ -104,7 +101,6 @@ const generateLaporan = async () => {
   }
 }
 
-// ✅ Export laporan ke Excel
 const exportToExcel = async () => {
   try {
     loading.value = true
@@ -130,11 +126,9 @@ const exportToExcel = async () => {
       responseType: 'blob'
     })
 
-    // Create download link
     const url = window.URL.createObjectURL(new Blob([res.data]))
     const link = document.createElement('a')
     
-    // Generate filename berdasarkan filter
     const bulanLabel = bulanList.find(b => b.value === filterBulan.value)?.label || ''
     const filename = `Laporan_Rencana_Produksi_${filterPeriode.value}_${filterTahun.value}_${filterPeriode.value === 'bulanan' ? bulanLabel : 'Minggu_' + filterMinggu.value}.xlsx`
     
@@ -144,15 +138,13 @@ const exportToExcel = async () => {
     link.click()
     link.remove()
     
-    // Cleanup
     setTimeout(() => {
       window.URL.revokeObjectURL(url)
     }, 100)
     
   } catch (error) {
     console.error('Gagal export laporan:', error)
-    
-    // Fallback: Export data yang sudah ada di frontend
+
     if (filteredRencana.value.length > 0) {
       exportFrontendExcel()
     } else {
@@ -163,7 +155,6 @@ const exportToExcel = async () => {
   }
 }
 
-// ✅ Fallback export Excel dari frontend
 const exportFrontendExcel = () => {
   try {
     const data = filteredRencana.value
@@ -172,12 +163,10 @@ const exportFrontendExcel = () => {
       return
     }
 
-    // Create CSV content
     let csvContent = "LAPORAN RENCANA PRODUKSI\n"
     csvContent += `Periode: ${activePeriodInfo.value}\n`
     csvContent += `Tanggal Export: ${new Date().toLocaleDateString('id-ID')}\n\n`
-    
-    // Headers
+
     const headers = [
       'No',
       'Nomor Rencana',
@@ -194,8 +183,7 @@ const exportFrontendExcel = () => {
       'Tanggal Dibuat'
     ]
     csvContent += headers.join(',') + '\n'
-    
-    // Data rows
+
     data.forEach((item, index) => {
       const row = [
         index + 1,
@@ -214,8 +202,7 @@ const exportFrontendExcel = () => {
       ]
       csvContent += row.join(',') + '\n'
     })
-    
-    // Create and download file
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -235,7 +222,6 @@ const exportFrontendExcel = () => {
   }
 }
 
-// Format tanggal
 const formatDate = (dateString) => {
   if (!dateString) return '-'
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -245,13 +231,11 @@ const formatDate = (dateString) => {
   })
 }
 
-// Format angka dengan separator
 const formatNumber = (number) => {
   if (!number) return '0'
   return number.toLocaleString('id-ID')
 }
 
-// Status badge dengan warna
 const getStatusBadge = (status) => {
   const statusConfig = {
     'draft': { class: 'bg-gray-100 text-gray-800', label: 'Draft' },
@@ -263,7 +247,6 @@ const getStatusBadge = (status) => {
   return statusConfig[status] || { class: 'bg-gray-100 text-gray-800', label: status }
 }
 
-// Progress badge dengan warna
 const getProgressBadge = (progress) => {
   if (progress >= 100) {
     return { class: 'bg-green-100 text-green-800', label: '100% Selesai' }
@@ -278,7 +261,6 @@ const getProgressBadge = (progress) => {
   }
 }
 
-// Filter rencana berdasarkan pencarian
 const filteredRencana = computed(() => {
   if (!rencanaData.value || !Array.isArray(rencanaData.value)) {
     return []
@@ -298,7 +280,6 @@ const filteredRencana = computed(() => {
   return filtered
 })
 
-// Statistik rencana
 const statistics = computed(() => {
   const rencana = filteredRencana.value
   
@@ -323,7 +304,6 @@ const statistics = computed(() => {
   }
 })
 
-// Reset filters
 const resetFilters = () => {
   filterPeriode.value = 'bulanan'
   filterTahun.value = new Date().getFullYear()
@@ -331,10 +311,8 @@ const resetFilters = () => {
   filterMinggu.value = 1
   filterStatus.value = ''
   searchQuery.value = ''
-  // Tidak perlu panggil loadRencana() karena watch akan otomatis trigger
 }
 
-// Info periode yang aktif
 const activePeriodInfo = computed(() => {
   if (filterPeriode.value === 'bulanan') {
     const bulan = bulanList.find(b => b.value === filterBulan.value)
@@ -352,7 +330,6 @@ onMounted(() => {
 <template>
   <PPICLayout>
     <div class="space-y-6">
-      <!-- HEADER -->
       <div class="bg-white rounded-xl shadow p-6">
         <div class="flex justify-between items-center mb-6">
           <div>
@@ -373,7 +350,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- INFO PERIODE -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -396,7 +372,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- STATISTICS RENCANA -->
         <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
           <div class="bg-blue-50 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-blue-600">{{ statistics.total }}</div>
@@ -424,7 +399,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- FILTERS -->
         <div class="bg-gray-50 rounded-lg p-4 mb-6">
           <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div class="md:col-span-2">
@@ -502,7 +476,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- DAFTAR RENCANA PRODUKSI -->
       <div class="bg-white rounded-xl shadow">
         <div class="p-6 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-800">
@@ -514,13 +487,11 @@ onMounted(() => {
         </div>
 
         <div class="p-6">
-          <!-- Loading State -->
           <div v-if="loading" class="text-center py-8">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
             <p class="text-gray-500 mt-2">Memuat data rencana...</p>
           </div>
 
-          <!-- Empty State -->
           <div v-else-if="!filteredRencana.length" class="text-center py-8">
             <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -535,7 +506,6 @@ onMounted(() => {
             </button>
           </div>
 
-          <!-- Table -->
           <div v-else class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">

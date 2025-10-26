@@ -7,7 +7,6 @@ import axios from 'axios'
 
 const auth = useAuth()
 
-// Data statistik
 const statistics = ref({
   totalProduk: 0,
   totalRencana: 0,
@@ -20,23 +19,17 @@ const statistics = ref({
 const loading = ref(true)
 const recentPlans = ref([])
 
-// Load data dashboard
 const loadDashboardData = async () => {
   try {
     loading.value = true
-
-    // Load statistik
     const statsRes = await axios.get('/api/ppic/dashboard')
     if (statsRes.data.success) {
       statistics.value = statsRes.data.data
     }
-
-    // Load rencana terbaru
     const plansRes = await axios.get('/api/ppic/production-plans?limit=5')
     if (plansRes.data.success) {
       recentPlans.value = plansRes.data.data || plansRes.data
     }
-
   } catch (error) {
     console.error('Gagal memuat data dashboard:', error)
   } finally {
@@ -44,12 +37,10 @@ const loadDashboardData = async () => {
   }
 }
 
-// Format angka
 const formatNumber = (num) => {
   return new Intl.NumberFormat('id-ID').format(num)
 }
 
-// Format tanggal
 const formatDate = (dateString) => {
   if (!dateString) return '-'
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -59,7 +50,6 @@ const formatDate = (dateString) => {
   })
 }
 
-// Status badge
 const getStatusBadge = (status) => {
   const statusConfig = {
     'draft': { class: 'bg-gray-100 text-gray-800', label: 'Draft' },
@@ -71,7 +61,6 @@ const getStatusBadge = (status) => {
   return statusConfig[status] || { class: 'bg-gray-100 text-gray-800', label: status }
 }
 
-// Progress berdasarkan status
 const getProgress = (status) => {
   const progressMap = {
     'draft': 0,
@@ -82,7 +71,6 @@ const getProgress = (status) => {
   return progressMap[status] || 0
 }
 
-// Quick actions berdasarkan role
 const quickActions = computed(() => {
   const baseActions = [
     {
@@ -94,7 +82,6 @@ const quickActions = computed(() => {
     }
   ]
 
-  // Hanya manager yang bisa akses laporan
   if (auth.user?.role === 'managerppic') {
     baseActions.push(
       {
@@ -124,7 +111,6 @@ const quickActions = computed(() => {
   return baseActions
 })
 
-// Refresh data
 const refreshData = () => {
   loadDashboardData()
 }
@@ -137,7 +123,6 @@ onMounted(() => {
 <template>
   <PPICLayout>
     <div class="space-y-6">
-      <!-- HEADER -->
       <div class="bg-white rounded-2xl shadow p-6">
         <div class="flex justify-between items-start mb-6">
           <div>
@@ -158,10 +143,7 @@ onMounted(() => {
             Refresh
           </button>
         </div>
-
-        <!-- STATISTICS GRID -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <!-- Total Produk -->
           <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -171,8 +153,6 @@ onMounted(() => {
               <div class="text-blue-600 text-2xl">📦</div>
             </div>
           </div>
-
-          <!-- Total Rencana -->
           <div class="bg-green-50 border border-green-200 rounded-xl p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -182,8 +162,6 @@ onMounted(() => {
               <div class="text-green-600 text-2xl">📝</div>
             </div>
           </div>
-
-          <!-- Menunggu Persetujuan -->
           <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -193,8 +171,6 @@ onMounted(() => {
               <div class="text-yellow-600 text-2xl">⏳</div>
             </div>
           </div>
-
-          <!-- Menjadi Order -->
           <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -205,8 +181,6 @@ onMounted(() => {
             </div>
           </div>
         </div>
-
-        <!-- QUICK ACTIONS -->
         <div class="mb-8">
           <h3 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h3>
           <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -239,8 +213,6 @@ onMounted(() => {
           </div>
         </div>
       </div>
-
-      <!-- RENCANA PRODUKSI TERBARU -->
       <div class="bg-white rounded-2xl shadow p-6">
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-lg font-semibold text-gray-800">Rencana Produksi Terbaru</h3>
@@ -254,12 +226,10 @@ onMounted(() => {
             Buat Rencana Baru
           </RouterLink>
         </div>
-
         <div v-if="loading" class="text-center py-8">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <p class="text-gray-500 mt-2">Memuat data rencana produksi...</p>
         </div>
-
         <div v-else-if="recentPlans.length === 0" class="text-center py-8">
           <div class="text-gray-400 text-4xl mb-3">📝</div>
           <h4 class="text-lg font-medium text-gray-900 mb-2">Belum ada rencana produksi</h4>
@@ -274,7 +244,6 @@ onMounted(() => {
             Buat Rencana Pertama
           </RouterLink>
         </div>
-
         <div v-else class="space-y-4">
           <div
             v-for="plan in recentPlans"
@@ -292,26 +261,22 @@ onMounted(() => {
                       {{ getStatusBadge(plan.status).label }}
                     </span>
                   </div>
-                  
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                     <div>
                       <span class="text-gray-500">Produk:</span>
                       <p class="font-medium text-gray-900">{{ plan.produk?.nama }}</p>
                       <p class="text-gray-600 text-xs">{{ plan.produk?.kode }}</p>
                     </div>
-                    
                     <div>
                       <span class="text-gray-500">Jumlah:</span>
                       <p class="font-medium text-gray-900">
                         {{ formatNumber(plan.jumlah) }} {{ plan.produk?.satuan || 'pcs' }}
                       </p>
                     </div>
-                    
                     <div>
                       <span class="text-gray-500">Batas Selesai:</span>
                       <p class="font-medium text-gray-900">{{ formatDate(plan.batas_selesai) }}</p>
                     </div>
-                    
                     <div>
                       <span class="text-gray-500">Dibuat:</span>
                       <p class="font-medium text-gray-900">{{ formatDate(plan.created_at) }}</p>
@@ -320,8 +285,6 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
-
-              <!-- Progress Bar -->
               <div class="mt-4">
                 <div class="flex justify-between text-sm text-gray-600 mb-2">
                   <span>Progress Persetujuan</span>
@@ -335,8 +298,6 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-
-            <!-- Action Buttons -->
             <div class="border-t border-gray-200 bg-gray-50 px-4 py-3 rounded-b-lg">
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-500">
@@ -345,8 +306,6 @@ onMounted(() => {
               </div>
             </div>
           </div>
-
-          <!-- View All Link -->
           <div class="text-center pt-4 border-t border-gray-200">
             <RouterLink 
               to="/ppic/rencana-produksi"

@@ -60,7 +60,6 @@ onMounted(loadData)
     <div class="bg-white rounded-xl shadow p-6">
       <h2 class="text-xl font-semibold mb-4">Master Produk</h2>
 
-      <!-- Form tambah / edit -->
       <form @submit.prevent="submitForm" class="grid md:grid-cols-2 gap-4 mb-6">
         <div>
           <label class="block text-sm">Kode Produk</label>
@@ -88,7 +87,6 @@ onMounted(loadData)
 
       <p v-if="errorMsg" class="text-red-500 text-sm mb-3">{{ errorMsg }}</p>
 
-      <!-- Tabel data -->
       <div class="overflow-x-auto">
             <table class="min-w-full border-collapse text-sm">
                 <thead>
