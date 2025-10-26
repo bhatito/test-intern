@@ -67,3 +67,8 @@ Catatan
 - Pastikan Nama Database sesuai MySQL sudah berjalan sebelum melakukan migrasi database.
 - Sesuaikan konfigurasi .env dengan environment Anda.
 - Aplikasi ini menggunakan Laravel Sanctum untuk autentikasi, pastikan konfigurasi SANCTUM_STATEFUL_DOMAINS sesuai dengan domain yang digunakan.
+
+
+NOTED :
+
+- UNTUK BISA MELIHAT SCREANSHOT ADA PADA FOLDER PUBLIK  DAN DI SCREENSHOT PADA PUBLIK ADALAH UNTUK ROLE MANAGER SETIAP DEPARTEMENT 
