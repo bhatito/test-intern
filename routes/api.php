@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProductionOrderController;
 use App\Http\Controllers\Api\ProductionPlanController;
 use App\Http\Controllers\DashboardPPICController;
 use App\Http\Controllers\DashboardProduksiController;
+use App\Http\Controllers\ProductionProduksiReportController;
 use App\Http\Controllers\ProductionReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -69,5 +70,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/production-orders/{order}/start', [ProductionOrderController::class, 'start']);
         Route::put('/production-orders/{order}/complete', [ProductionOrderController::class, 'complete']);
         Route::put('/production-orders/{order}/progress', [ProductionOrderController::class, 'updateProgress']);
+
+        Route::get('/laporan', [ProductionProduksiReportController::class, 'index']);
+        Route::post('/laporan/generate', [ProductionProduksiReportController::class, 'generate']);
+        Route::get('/laporan/{id}/export-excel', [ProductionProduksiReportController::class, 'exportExcel']);
+        Route::get('/laporan/{id}/preview', [ProductionProduksiReportController::class, 'preview']); // Tambahkan ini
+        Route::get('/laporan/stats/realtime', [ProductionProduksiReportController::class, 'getRealTimeStats']);
+        // Route::get('/laporan/{id}/export-excel', [ProductionProduksiReportController::class, 'exportExcelSimple']);
     });
 });

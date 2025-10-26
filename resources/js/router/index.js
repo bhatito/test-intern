@@ -89,7 +89,10 @@ const router = createRouter({
     { 
       path: '/produksi/laporan-produksi', 
       component: LaporanProduksi,
-      meta: { requiresAuth: true, department: 'produksi' }
+      meta: { 
+        requiresAuth: true, 
+        department: 'produksi',
+        role: 'managerpproduksi'  }
     },
 
     
