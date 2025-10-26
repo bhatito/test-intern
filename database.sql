@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 26, 2025 at 10:20 PM
+-- Generation Time: Oct 26, 2025 at 11:57 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.28
 
@@ -126,7 +126,7 @@ CREATE TABLE `personal_access_tokens` (
 --
 
 INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
-(11, 'App\\Models\\User', '30e7783c-5631-4305-8202-62b3bfa07307', 'api', '2b203ea893b24fad35b0dede8cb7c64f3c6cccadfa7540a32879ec045ccf896b', '[\"*\"]', '2025-10-26 15:19:45', NULL, '2025-10-26 14:32:00', '2025-10-26 15:19:45');
+(21, 'App\\Models\\User', '145edc02-e951-44fd-8600-4dd78468699c', 'api', '73abc331a11978540484490dc57ce711dab649da5cd98fc36ca9771a4f55d304', '[\"*\"]', '2025-10-26 16:39:27', NULL, '2025-10-26 16:32:51', '2025-10-26 16:39:27');
 
 -- --------------------------------------------------------
 
@@ -252,22 +252,6 @@ INSERT INTO `production_plan_histories` (`id`, `rencana_id`, `user_id`, `aksi`, 
 ('a0348ac2-b1a1-4b17-9479-16acb37d0449', 'a0338b59-4221-49d6-85b8-beeb0bec9443', '145edc02-e951-44fd-8600-4dd78468699c', 'diproses', 'disetujui', 'menjadi_order', 'Rencana diproses menjadi order produksi', '2025-10-26 03:41:07', '2025-10-26 03:41:07', '2025-10-26 03:41:07'),
 ('a035739d-6f63-4278-bda6-b664d9d9a986', 'a035739d-6ad9-40a9-afda-16cdd21ed8cf', '30e7783c-5631-4305-8202-62b3bfa07307', 'dibuat', 'baru', 'draft', 'Rencana produksi dibuat oleh PPIC', '2025-10-26 14:32:14', '2025-10-26 14:32:14', '2025-10-26 14:32:14'),
 ('a03573a4-0cd7-4c2b-af95-8d357e0f02c0', 'a035739d-6ad9-40a9-afda-16cdd21ed8cf', '30e7783c-5631-4305-8202-62b3bfa07307', 'diajukan', 'draft', 'menunggu_persetujuan', 'Rencana diajukan untuk persetujuan manager produksi', '2025-10-26 14:32:18', '2025-10-26 14:32:18', '2025-10-26 14:32:18');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `production_rejects`
---
-
-CREATE TABLE `production_rejects` (
-  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `order_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `jenis_cacat` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `jumlah` int NOT NULL,
-  `dicatat_oleh` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -399,14 +383,6 @@ ALTER TABLE `production_plan_histories`
   ADD KEY `production_plan_histories_user_id_foreign` (`user_id`);
 
 --
--- Indexes for table `production_rejects`
---
-ALTER TABLE `production_rejects`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `production_rejects_order_id_foreign` (`order_id`),
-  ADD KEY `production_rejects_dicatat_oleh_foreign` (`dicatat_oleh`);
-
---
 -- Indexes for table `production_reports`
 --
 ALTER TABLE `production_reports`
@@ -441,7 +417,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `personal_access_tokens`
 --
 ALTER TABLE `personal_access_tokens`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Constraints for dumped tables
@@ -476,13 +452,6 @@ ALTER TABLE `production_plans`
 ALTER TABLE `production_plan_histories`
   ADD CONSTRAINT `production_plan_histories_rencana_id_foreign` FOREIGN KEY (`rencana_id`) REFERENCES `production_plans` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `production_plan_histories_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `production_rejects`
---
-ALTER TABLE `production_rejects`
-  ADD CONSTRAINT `production_rejects_dicatat_oleh_foreign` FOREIGN KEY (`dicatat_oleh`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `production_rejects_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `production_orders` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `production_reports`
