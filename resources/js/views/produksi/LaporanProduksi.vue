@@ -3,7 +3,6 @@ import { ref, onMounted } from 'vue';
 import ProduksiLayout from '@/layouts/ProduksiLayout.vue';
 import axios from 'axios';
 
-// Initialize Axios with CSRF token
 axios.defaults.withCredentials = true;
 
 const loading = ref(false);
@@ -17,20 +16,17 @@ const selectedLaporan = ref(null);
 const showDetailModal = ref(false);
 const laporanDetail = ref(null);
 
-// Filter form
 const filterForm = ref({
     periode_awal: new Date().toISOString().split('T')[0],
     periode_akhir: new Date().toISOString().split('T')[0]
 });
 
-// Generate form
 const generateForm = ref({
     periode_awal: new Date().toISOString().split('T')[0],
     periode_akhir: new Date().toISOString().split('T')[0],
     catatan: ''
 });
 
-// Load data laporan
 const loadLaporan = async () => {
     try {
         loading.value = true;
@@ -61,7 +57,6 @@ const loadLaporan = async () => {
     }
 };
 
-// Load realtime stats
 const loadRealtimeStats = async () => {
     try {
         const response = await axios.get('/api/produksi/laporan/stats/realtime');
@@ -73,7 +68,6 @@ const loadRealtimeStats = async () => {
     }
 };
 
-// Generate laporan baru
 const generateLaporan = async () => {
     try {
         generating.value = true;
@@ -87,8 +81,7 @@ const generateLaporan = async () => {
             generateForm.value.catatan = '';
             showGenerateModal.value = false;
             await loadLaporan();
-            
-            // Tampilkan detail laporan yang baru dibuat
+
             laporanDetail.value = response.data.data;
             showDetailModal.value = true;
         } else {
@@ -104,7 +97,6 @@ const generateLaporan = async () => {
     }
 };
 
-// Export laporan ke Excel
 const exportLaporan = async (laporanId) => {
     try {
         loading.value = true;
@@ -114,10 +106,8 @@ const exportLaporan = async (laporanId) => {
             responseType: 'blob'
         });
 
-        // Check if response is an Excel file
         const contentType = res.headers['content-type'];
         if (!contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
-            // Attempt to read error response
             const errorText = await res.data.text();
             try {
                 const errorData = JSON.parse(errorText);
@@ -127,14 +117,12 @@ const exportLaporan = async (laporanId) => {
             }
         }
 
-        // Create download link
         const blob = new Blob([res.data], {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
 
-        // Get filename from header or use default
         let filename = `Laporan_Produksi_${laporanId}_${new Date().getTime()}.xlsx`;
         const contentDisposition = res.headers['content-disposition'];
         if (contentDisposition) {
@@ -150,7 +138,6 @@ const exportLaporan = async (laporanId) => {
         link.click();
         document.body.removeChild(link);
 
-        // Cleanup
         setTimeout(() => {
             window.URL.revokeObjectURL(url);
         }, 100);
@@ -163,7 +150,6 @@ const exportLaporan = async (laporanId) => {
     }
 };
 
-// Lihat detail laporan
 const viewLaporanDetail = async (laporanItem) => {
     try {
         selectedLaporan.value = laporanItem;
@@ -183,7 +169,6 @@ const viewLaporanDetail = async (laporanItem) => {
     }
 };
 
-// Format tanggal
 const formatDate = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -193,7 +178,6 @@ const formatDate = (dateString) => {
     });
 };
 
-// Format tanggal lengkap
 const formatDateTime = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -205,12 +189,10 @@ const formatDateTime = (dateString) => {
     });
 };
 
-// Format angka
 const formatNumber = (num) => {
     return new Intl.NumberFormat('id-ID').format(num || 0);
 };
 
-// Format persentase
 const formatPercent = (num) => {
     return new Intl.NumberFormat('id-ID', {
         minimumFractionDigits: 2,
@@ -218,7 +200,6 @@ const formatPercent = (num) => {
     }).format(num || 0) + '%';
 };
 
-// Reset form generate
 const resetGenerateForm = () => {
     generateForm.value = {
         periode_awal: new Date().toISOString().split('T')[0],
@@ -227,7 +208,6 @@ const resetGenerateForm = () => {
     };
 };
 
-// Hitung durasi periode
 const calculatePeriodDays = (start, end) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
@@ -236,7 +216,6 @@ const calculatePeriodDays = (start, end) => {
 };
 
 onMounted(async () => {
-    // Fetch CSRF token for session-based authentication
     await axios.get('/sanctum/csrf-cookie');
     loadLaporan();
     loadRealtimeStats();
@@ -246,7 +225,6 @@ onMounted(async () => {
 <template>
     <ProduksiLayout>
         <div class="space-y-6">
-            <!-- Header -->
             <div class="bg-white rounded-2xl shadow p-6">
                 <div class="flex justify-between items-start mb-6">
                     <div>
@@ -264,7 +242,6 @@ onMounted(async () => {
                     </button>
                 </div>
 
-                <!-- Statistik Real-time -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                         <div class="flex items-center justify-between">
@@ -316,7 +293,6 @@ onMounted(async () => {
                     </div>
                 </div>
 
-                <!-- Filter Section -->
                 <div class="bg-gray-50 rounded-xl p-4 mb-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Laporan</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -348,7 +324,6 @@ onMounted(async () => {
                 </div>
             </div>
 
-            <!-- Error & Success Messages -->
             <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-xl p-4">
                 <div class="flex items-center gap-3">
                     <span class="text-red-600 text-lg">⚠️</span>
@@ -381,7 +356,6 @@ onMounted(async () => {
                 </div>
             </div>
 
-            <!-- Daftar Laporan -->
             <div class="bg-white rounded-2xl shadow p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-lg font-semibold text-gray-800">Daftar Laporan Produksi</h3>
@@ -449,7 +423,6 @@ onMounted(async () => {
                                 </div>
                             </div>
 
-                            <!-- Action Buttons -->
                             <div class="flex gap-2 mt-3">
                                 <button
                                     @click="viewLaporanDetail(laporanItem)"
@@ -478,7 +451,6 @@ onMounted(async () => {
             </div>
         </div>
 
-        <!-- Modal Generate Laporan -->
         <div v-if="showGenerateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
                 <div class="p-6">
@@ -549,7 +521,6 @@ onMounted(async () => {
             </div>
         </div>
 
-        <!-- Modal Detail Laporan -->
         <div v-if="showDetailModal && laporanDetail" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <div class="p-6">
@@ -565,7 +536,6 @@ onMounted(async () => {
                         </button>
                     </div>
 
-                    <!-- Informasi Laporan -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div class="bg-gray-50 rounded-lg p-4">
                             <h4 class="font-medium text-gray-800 mb-3">Informasi Laporan</h4>
@@ -589,7 +559,6 @@ onMounted(async () => {
                             </div>
                         </div>
 
-                        <!-- Ringkasan Produksi -->
                         <div class="bg-green-50 rounded-lg p-4">
                             <h4 class="font-medium text-green-800 mb-3">Ringkasan Produksi</h4>
                             <div class="space-y-2 text-sm">
@@ -613,7 +582,6 @@ onMounted(async () => {
                         </div>
                     </div>
 
-                    <!-- Statistik Per Produk -->
                     <div class="bg-white rounded-lg p-4 mb-6">
                         <h4 class="font-medium text-gray-800 mb-3">Statistik Per Produk</h4>
                         <div class="overflow-x-auto">
@@ -651,13 +619,11 @@ onMounted(async () => {
                         </div>
                     </div>
 
-                    <!-- Catatan -->
                     <div v-if="laporanDetail.laporan?.catatan" class="bg-blue-50 rounded-lg p-4 mb-6">
                         <h4 class="font-medium text-blue-800 mb-2">Catatan</h4>
                         <p class="text-blue-700 text-sm">{{ laporanDetail.laporan.catatan }}</p>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="flex gap-3">
                         <button
                             @click="exportLaporan(laporanDetail.laporan?.id)"

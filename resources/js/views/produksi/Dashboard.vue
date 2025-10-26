@@ -7,7 +7,6 @@ import axios from 'axios'
 
 const auth = useAuth()
 
-// Data statistik
 const statistics = ref({
   total: 0,
   menunggu: 0,
@@ -21,7 +20,6 @@ const recentOrders = ref([])
 const pendingApprovals = ref(0)
 const errorMessage = ref('')
 
-// Load data dashboard
 const loadDashboardData = async () => {
   try {
     loading.value = true
@@ -30,7 +28,6 @@ const loadDashboardData = async () => {
     console.log('=== MEMULAI LOAD DATA DASHBOARD ===')
     console.log('User role:', auth.user?.role)
 
-    // Load statistik dashboard
     const statsRes = await axios.get('/api/produksi/dashboard/stats')
     console.log('📊 Stats response:', statsRes.data)
     
@@ -41,7 +38,6 @@ const loadDashboardData = async () => {
       console.error('❌ Gagal memuat statistik:', statsRes.data)
     }
 
-    // Load order terbaru
     try {
       const ordersRes = await axios.get('/api/produksi/production-orders?limit=5')
       console.log('📦 Orders response:', ordersRes.data)
@@ -58,7 +54,6 @@ const loadDashboardData = async () => {
       recentOrders.value = []
     }
 
-    // Load pending approvals (hanya untuk manager)
     if (auth.user?.role === 'managerpproduksi') {
       try {
         const approvalsRes = await axios.get('/api/produksi/dashboard/pending-approvals-count')
@@ -78,8 +73,7 @@ const loadDashboardData = async () => {
     console.error('❌ Gagal memuat data dashboard:', error)
     console.error('Error details:', error.response?.data || error.message)
     errorMessage.value = 'Gagal memuat data dashboard. Silakan refresh halaman.'
-    
-    // Fallback data untuk development
+
     statistics.value = {
       total: 12,
       menunggu: 3,
@@ -97,12 +91,9 @@ const loadDashboardData = async () => {
   }
 }
 
-// Format angka
 const formatNumber = (num) => {
   return new Intl.NumberFormat('id-ID').format(num)
 }
-
-// Status badge
 const getStatusBadge = (status) => {
   const statusConfig = {
     'menunggu': { class: 'bg-yellow-100 text-yellow-800', label: 'Menunggu', icon: '⏳' },
@@ -114,7 +105,6 @@ const getStatusBadge = (status) => {
   return statusConfig[status] || { class: 'bg-gray-100 text-gray-800', label: status, icon: '📋' }
 }
 
-// Quick actions berdasarkan role
 const quickActions = computed(() => {
   const baseActions = [
     {
@@ -126,7 +116,6 @@ const quickActions = computed(() => {
     }
   ]
 
-  // Hanya manager yang bisa akses persetujuan
   if (auth.user?.role === 'managerpproduksi') {
     baseActions.unshift(
       {
@@ -150,14 +139,12 @@ const quickActions = computed(() => {
   return baseActions
 })
 
-// Hitung efisiensi produksi
 const productionEfficiency = computed(() => {
   const total = statistics.value.total || 1
   const completed = statistics.value.selesai_bulan_ini || 0
   return Math.round((completed / total) * 100)
 })
 
-// Refresh data
 const refreshData = () => {
   loadDashboardData()
 }
@@ -170,7 +157,6 @@ onMounted(() => {
 <template>
   <ProduksiLayout>
     <div class="space-y-6">
-      <!-- Error Message -->
       <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-xl p-4">
         <div class="flex items-center gap-3">
           <span class="text-red-600 text-lg">⚠️</span>
@@ -187,7 +173,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- HEADER -->
       <div class="bg-white rounded-2xl shadow p-6">
         <div class="flex justify-between items-start mb-6">
           <div>
@@ -219,9 +204,7 @@ onMounted(() => {
           </button>
         </div>
 
-        <!-- STATISTICS GRID -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <!-- Total Order -->
           <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -233,7 +216,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Menunggu -->
           <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -245,7 +227,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Sedang Dikerjakan -->
           <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -257,7 +238,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Selesai Bulan Ini -->
           <div class="bg-green-50 border border-green-200 rounded-xl p-4">
             <div class="flex items-center justify-between">
               <div>
@@ -272,7 +252,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- QUICK ACTIONS -->
         <div class="mb-8">
           <h3 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h3>
           <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -313,9 +292,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- ORDER TERBARU & STATISTIK -->
       <div class="grid lg:grid-cols-2 gap-6">
-        <!-- Order Produksi Terbaru -->
         <div class="bg-white rounded-2xl shadow p-6">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-gray-800">Order Produksi Terbaru</h3>
@@ -375,7 +352,6 @@ onMounted(() => {
                   </div>
                 </div>
 
-                <!-- Action Buttons berdasarkan status -->
                 <div class="flex gap-2 mt-3">
                   <RouterLink 
                     v-if="order.status === 'menunggu'"
@@ -397,7 +373,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Statistik Produksi -->
         <div class="bg-white rounded-2xl shadow p-6">
           <h3 class="text-lg font-semibold text-gray-800 mb-4">Statistik Produksi</h3>
           
@@ -407,7 +382,6 @@ onMounted(() => {
           </div>
 
           <div v-else class="space-y-4">
-            <!-- Progress Ringkasan -->
             <div class="bg-gray-50 rounded-lg p-4">
               <h4 class="font-medium text-gray-800 mb-3">Ringkasan Progress</h4>
               <div class="space-y-3">
@@ -426,7 +400,6 @@ onMounted(() => {
               </div>
             </div>
 
-            <!-- Efisiensi Produksi -->
             <div class="bg-green-50 rounded-lg p-4">
               <h4 class="font-medium text-green-800 mb-2">Efisiensi Produksi</h4>
               <div class="flex items-center gap-3">
@@ -443,7 +416,6 @@ onMounted(() => {
               </p>
             </div>
 
-            <!-- Info Cepat -->
             <div class="bg-blue-50 rounded-lg p-4">
               <h4 class="font-medium text-blue-800 mb-2">Info Cepat</h4>
               <div class="space-y-2 text-sm">

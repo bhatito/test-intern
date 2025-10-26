@@ -11,5 +11,4 @@ app.use(createPinia())
 app.use(router)
 app.mount('#app')
 axios.get('/sanctum/csrf-cookie').then(() => {
-    // Axios will include the CSRF token
 });

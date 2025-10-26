@@ -42,30 +42,25 @@ const startOrder = async (order) => {
 }
 
 const completeOrder = async (order) => {
-  // Input jumlah aktual
   const jumlah_aktual = parseInt(prompt('Masukkan jumlah aktual yang berhasil diproduksi:', order.target_jumlah ?? 0) || '0', 10)
   if (isNaN(jumlah_aktual) || jumlah_aktual < 0) {
     alert('Jumlah aktual harus angka positif')
     return
   }
 
-  // Input jumlah reject
   const jumlah_reject = parseInt(prompt('Masukkan jumlah reject (NG/rusak):', '0') || '0', 10)
   if (isNaN(jumlah_reject) || jumlah_reject < 0) {
     alert('Jumlah reject harus angka positif')
     return
   }
 
-  // Validasi jumlah reject tidak melebihi jumlah aktual
   if (jumlah_reject > jumlah_aktual) {
     alert('Jumlah reject tidak boleh melebihi jumlah aktual')
     return
   }
 
-  // Hitung jumlah good (jumlah aktual - reject)
   const jumlah_good = jumlah_aktual - jumlah_reject
-  
-  // Konfirmasi sebelum submit
+
   const confirmationMessage = `
 Konfirmasi penyelesaian order:
 - Jumlah Aktual: ${jumlah_aktual.toLocaleString()} ${order.produk?.satuan || 'pcs'}
@@ -98,7 +93,6 @@ Lanjutkan penyelesaian order?`
   }
 }
 
-// Format tanggal
 const formatDate = (dateString) => {
   if (!dateString) return '-'
   return new Date(dateString).toLocaleDateString('id-ID', {
@@ -110,7 +104,6 @@ const formatDate = (dateString) => {
   })
 }
 
-// Format waktu relative
 const formatTimeAgo = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
@@ -128,24 +121,22 @@ const formatTimeAgo = (dateString) => {
   return formatDate(dateString)
 }
 
-// Warna status
 const getStatusColor = (status) => {
   const colors = {
     'menunggu': 'bg-yellow-100 text-yellow-800 border-yellow-200',
     'dalam_proses': 'bg-blue-100 text-blue-800 border-blue-200',
     'selesai': 'bg-green-100 text-green-800 border-green-200',
-    'dikerjakan': 'bg-blue-100 text-blue-800 border-blue-200', // fallback
+    'dikerjakan': 'bg-blue-100 text-blue-800 border-blue-200',
   }
   return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200'
 }
 
-// Label status
 const getStatusLabel = (status) => {
   const labels = {
     'menunggu': 'Menunggu',
     'dalam_proses': 'Dalam Proses',
     'selesai': 'Selesai',
-    'dikerjakan': 'Dalam Proses', // fallback
+    'dikerjakan': 'Dalam Proses', 
   }
   return labels[status] || status
 }
@@ -178,13 +169,11 @@ onMounted(loadOrders)
         </div>
       </div>
 
-      <!-- Loading State -->
       <div v-if="loading" class="text-center py-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
         <p class="text-gray-500 mt-2">Memuat data order...</p>
       </div>
 
-      <!-- Empty State -->
       <div v-else-if="!orders.length" class="text-center py-8">
         <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -193,7 +182,6 @@ onMounted(loadOrders)
         <p class="text-gray-500">Semua order produksi telah diproses atau belum ada order baru</p>
       </div>
 
-      <!-- Table -->
       <div v-else class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
@@ -237,7 +225,6 @@ onMounted(loadOrders)
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
                 <div class="flex gap-2">
-                  <!-- Tombol Mulai untuk status menunggu -->
                   <button
                     v-if="order.status === 'menunggu'"
                     @click="startOrder(order)"
@@ -250,7 +237,6 @@ onMounted(loadOrders)
                     Mulai
                   </button>
 
-                  <!-- Tombol Selesai untuk status dalam_proses -->
                   <button
                     v-if="order.status === 'dalam_proses' || order.status === 'dikerjakan'"
                     @click="completeOrder(order)"
@@ -262,7 +248,6 @@ onMounted(loadOrders)
                     Selesai
                   </button>
 
-                  <!-- Status selesai -->
                   <span v-if="order.status === 'selesai'" class="text-xs text-gray-500 flex items-center gap-1">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -271,7 +256,6 @@ onMounted(loadOrders)
                   </span>
                 </div>
 
-                <!-- Info jumlah aktual jika sudah selesai -->
                 <div v-if="order.status === 'selesai' && order.jumlah_aktual" class="text-xs text-gray-600 mt-1">
                   Aktual: {{ order.jumlah_aktual?.toLocaleString() }}
                   <span v-if="order.jumlah_reject" class="text-red-600">
