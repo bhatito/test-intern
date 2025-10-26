@@ -21,16 +21,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // 🔸 Khusus PPIC
-    // Di routes/api.php - PERBAIKI ROUTE PPIC
     Route::prefix('ppic')->middleware('department:ppic')->group(function () {
-        // Route::get('/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard PPIC']));
 
         Route::get('/dashboard', [DashboardPPICController::class, 'index']);
-
-
         // Master Products
         Route::apiResource('master-products', MasterProductController::class);
-
         // Production Plans
         Route::get('/production-plans', [ProductionPlanController::class, 'index']);
         Route::get('/production-plans/statistics', [ProductionPlanController::class, 'statistics']);
@@ -39,7 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/production-plans/{plan}', [ProductionPlanController::class, 'update']);
         Route::delete('/production-plans/{plan}', [ProductionPlanController::class, 'destroy']);
         Route::put('/production-plans/{plan}/submit', [ProductionPlanController::class, 'submit']);
-        Route::put('/production-plans/{plan}/cancel', [ProductionPlanController::class, 'cancelSubmission']); // PERBAIKI INI
+        Route::put('/production-plans/{plan}/cancel', [ProductionPlanController::class, 'cancelSubmission']);
         Route::get('/production-plans/{plan}/history', [ProductionPlanController::class, 'history']);
 
         Route::get('/production-reports', [ProductionReportController::class, 'index']);
@@ -71,11 +66,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/production-orders/{order}/complete', [ProductionOrderController::class, 'complete']);
         Route::put('/production-orders/{order}/progress', [ProductionOrderController::class, 'updateProgress']);
 
+        // Laporan Produksi
         Route::get('/laporan', [ProductionProduksiReportController::class, 'index']);
         Route::post('/laporan/generate', [ProductionProduksiReportController::class, 'generate']);
         Route::get('/laporan/{id}/export-excel', [ProductionProduksiReportController::class, 'exportExcel']);
-        Route::get('/laporan/{id}/preview', [ProductionProduksiReportController::class, 'preview']); // Tambahkan ini
+        Route::get('/laporan/{id}/preview', [ProductionProduksiReportController::class, 'preview']);
         Route::get('/laporan/stats/realtime', [ProductionProduksiReportController::class, 'getRealTimeStats']);
-        // Route::get('/laporan/{id}/export-excel', [ProductionProduksiReportController::class, 'exportExcelSimple']);
     });
 });

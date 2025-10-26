@@ -14,7 +14,6 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class ProductionProduksiReportController extends Controller
 {
@@ -22,6 +21,13 @@ class ProductionProduksiReportController extends Controller
     {
         try {
             $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Please login first.',
+                    'data' => []
+                ], 401);
+            }
 
             $query = ProductionReport::with('pembuat')
                 ->orderBy('created_at', 'desc');
@@ -55,13 +61,16 @@ class ProductionProduksiReportController extends Controller
         }
     }
 
-    /**
-     * Generate laporan produksi baru
-     */
     public function generate(Request $request)
     {
         try {
             $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Please login first.'
+                ], 401);
+            }
 
             $request->validate([
                 'periode_awal' => 'required|date',
@@ -101,9 +110,6 @@ class ProductionProduksiReportController extends Controller
         }
     }
 
-    /**
-     * Menghitung statistik produksi
-     */
     private function calculateProductionStats($periodeAwal, $periodeAkhir)
     {
         $periodeAwal = Carbon::parse($periodeAwal);
@@ -194,27 +200,18 @@ class ProductionProduksiReportController extends Controller
     public function exportExcel($id)
     {
         try {
-            // Cek authentication dengan multiple methods
+            // Check if user is authenticated
             $user = Auth::user();
-
-            // Jika tidak ada user dari Auth, cek token dari query parameter
-            if (!$user) {
-                $token = request()->query('token');
-                if ($token) {
-                    $personalAccessToken = PersonalAccessToken::findToken($token);
-                    if ($personalAccessToken) {
-                        $user = $personalAccessToken->tokenable;
-                        Auth::setUser($user);
-                    }
-                }
-            }
-
-            // Jika masih tidak ada user, return error
             if (!$user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized. Please login first.'
                 ], 401);
+            }
+
+            // Clear all output buffers to prevent corruption
+            while (ob_get_level()) {
+                ob_end_clean();
             }
 
             Log::info('Export Excel started', [
@@ -225,67 +222,77 @@ class ProductionProduksiReportController extends Controller
             $laporan = ProductionReport::with('pembuat')->findOrFail($id);
             $statistik = $this->calculateProductionStats($laporan->periode_awal, $laporan->periode_akhir);
 
-            // Buat spreadsheet
+            // Create spreadsheet
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
-            // Set judul laporan - SIMPLIFIED VERSION
+            // Set report title
             $sheet->setCellValue('A1', 'LAPORAN PRODUKSI');
-            $sheet->mergeCells('A1:F1');
-            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+            $sheet->mergeCells('A1:J1');
+            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
             $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            // Informasi dasar laporan
-            $sheet->setCellValue('A3', 'Nomor Laporan:');
-            $sheet->setCellValue('B3', $laporan->nomor_laporan);
-            $sheet->setCellValue('A4', 'Periode:');
-            $sheet->setCellValue('B4', $statistik['periode']['awal'] . ' - ' . $statistik['periode']['akhir']);
-            $sheet->setCellValue('A5', 'Dibuat Oleh:');
-            $sheet->setCellValue('B5', $laporan->pembuat->name ?? 'Tidak Diketahui');
-            $sheet->setCellValue('A6', 'Tanggal Dibuat:');
-            $sheet->setCellValue('B6', $laporan->created_at->format('d/m/Y H:i'));
+            // Info laporan
+            $sheet->setCellValue('A2', 'Nomor Laporan: ' . $laporan->nomor_laporan);
+            $sheet->mergeCells('A2:J2');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            // Ringkasan Produksi - Header
-            $sheet->setCellValue('A8', 'RINGKASAN PRODUKSI');
-            $sheet->mergeCells('A8:B8');
-            $sheet->getStyle('A8')->getFont()->setBold(true);
+            $sheet->setCellValue('A3', 'Periode: ' . $statistik['periode']['awal'] . ' - ' . $statistik['periode']['akhir']);
+            $sheet->mergeCells('A3:J3');
+            $sheet->getStyle('A3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            // Ringkasan data
-            $ringkasanLabels = [
-                'Total Order',
-                'Total Target Produksi',
-                'Total Produksi Aktual',
-                'Total Reject',
-                'Efisiensi Produksi',
-                'Tingkat Reject'
-            ];
+            $sheet->setCellValue('A4', 'Tanggal Export: ' . Carbon::now()->format('d/m/Y H:i:s'));
+            $sheet->mergeCells('A4:J4');
+            $sheet->getStyle('A4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            $ringkasanValues = [
-                $statistik['ringkasan']['total_order'],
-                $statistik['ringkasan']['total_target'],
-                $statistik['ringkasan']['total_produksi'],
-                $statistik['ringkasan']['total_reject'],
-                $statistik['ringkasan']['efisiensi'] . '%',
-                $statistik['ringkasan']['tingkat_reject'] . '%'
+            $sheet->setCellValue('A5', 'Dibuat Oleh: ' . ($laporan->pembuat->name ?? 'Tidak Diketahui'));
+            $sheet->mergeCells('A5:J5');
+            $sheet->getStyle('A5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+            // Ringkasan Produksi
+            $sheet->setCellValue('A7', 'RINGKASAN PRODUKSI');
+            $sheet->mergeCells('A7:B7');
+            $sheet->getStyle('A7')->getFont()->setBold(true);
+            $sheet->getStyle('A7')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE6E6FA');
+
+            // Summary headers
+            $sheet->setCellValue('A8', 'Metrik');
+            $sheet->setCellValue('B8', 'Nilai');
+            $sheet->getStyle('A8:B8')->getFont()->setBold(true);
+            $sheet->getStyle('A8:B8')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE6E6FA');
+            $sheet->getStyle('A8:B8')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+            // Summary data
+            $ringkasanData = [
+                ['Total Order', $statistik['ringkasan']['total_order']],
+                ['Total Target Produksi', $statistik['ringkasan']['total_target']],
+                ['Total Produksi Aktual', $statistik['ringkasan']['total_produksi']],
+                ['Total Reject', $statistik['ringkasan']['total_reject']],
+                ['Efisiensi Produksi', $statistik['ringkasan']['efisiensi'] . '%'],
+                ['Tingkat Reject', $statistik['ringkasan']['tingkat_reject'] . '%']
             ];
 
             $row = 9;
-            foreach ($ringkasanLabels as $index => $label) {
-                $sheet->setCellValue('A' . $row, $label);
-                $sheet->setCellValue('B' . $row, $ringkasanValues[$index]);
+            foreach ($ringkasanData as $data) {
+                $sheet->setCellValue('A' . $row, $data[0]);
+                $sheet->setCellValue('B' . $row, $data[1]);
+                $sheet->getStyle('A' . $row . ':B' . $row)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                 $row++;
             }
 
-            // Statistik per Status
+            // Status Order
             $row += 2;
             $sheet->setCellValue('A' . $row, 'STATUS ORDER');
             $sheet->mergeCells('A' . $row . ':B' . $row);
             $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+            $sheet->getStyle('A' . $row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE6E6FA');
 
             $row++;
             $sheet->setCellValue('A' . $row, 'Status');
             $sheet->setCellValue('B' . $row, 'Jumlah');
             $sheet->getStyle('A' . $row . ':B' . $row)->getFont()->setBold(true);
+            $sheet->getStyle('A' . $row . ':B' . $row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE6E6FA');
+            $sheet->getStyle('A' . $row . ':B' . $row)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
             $row++;
             if (!empty($statistik['status_order'])) {
@@ -293,28 +300,34 @@ class ProductionProduksiReportController extends Controller
                     $statusLabel = ucfirst(str_replace('_', ' ', $status));
                     $sheet->setCellValue('A' . $row, $statusLabel);
                     $sheet->setCellValue('B' . $row, $jumlah);
+                    $sheet->getStyle('A' . $row . ':B' . $row)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                     $row++;
                 }
             } else {
                 $sheet->setCellValue('A' . $row, 'Tidak ada data');
                 $sheet->setCellValue('B' . $row, '0');
+                $sheet->getStyle('A' . $row . ':B' . $row)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                 $row++;
             }
 
-            // Statistik per Produk
-            $sheet->setCellValue('D8', 'STATISTIK PER PRODUK');
-            $sheet->mergeCells('D8:H8');
-            $sheet->getStyle('D8')->getFont()->setBold(true);
+            // Statistik Per Produk
+            $sheet->setCellValue('D7', 'STATISTIK PER PRODUK');
+            $sheet->mergeCells('D7:J7');
+            $sheet->getStyle('D7')->getFont()->setBold(true);
+            $sheet->getStyle('D7')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE6E6FA');
 
             $produkHeaders = ['Kode', 'Produk', 'Order', 'Target', 'Produksi', 'Reject', 'Efisiensi'];
             $col = 'D';
+            $row = 8;
             foreach ($produkHeaders as $header) {
-                $sheet->setCellValue($col . '9', $header);
-                $sheet->getStyle($col . '9')->getFont()->setBold(true);
+                $sheet->setCellValue($col . $row, $header);
+                $sheet->getStyle($col . $row)->getFont()->setBold(true);
+                $sheet->getStyle($col . $row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE6E6FA');
+                $sheet->getStyle($col . $row)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                 $col++;
             }
 
-            $row = 10;
+            $row = 9;
             if (!empty($statistik['statistik_produk'])) {
                 foreach ($statistik['statistik_produk'] as $produk) {
                     $sheet->setCellValue('D' . $row, $produk->kode ?? '');
@@ -324,33 +337,35 @@ class ProductionProduksiReportController extends Controller
                     $sheet->setCellValue('H' . $row, $produk->total_produksi ?? 0);
                     $sheet->setCellValue('I' . $row, $produk->total_reject ?? 0);
                     $sheet->setCellValue('J' . $row, ($produk->efisiensi ?? 0) . '%');
+                    $sheet->getStyle('D' . $row . ':J' . $row)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                     $row++;
                 }
             } else {
                 $sheet->setCellValue('D' . $row, 'Tidak ada data');
                 $sheet->mergeCells('D' . $row . ':J' . $row);
+                $sheet->getStyle('D' . $row . ':J' . $row)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
             }
 
-            // Auto size columns
+            // Auto-size columns
             foreach (range('A', 'J') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
-            // Set nama file
-            $filename = 'Laporan_Produksi_' . $laporan->nomor_laporan . '.xlsx';
+            // Sanitize filename with timestamp for uniqueness
+            $filename = 'Laporan_Produksi_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $laporan->nomor_laporan) . '_' . Carbon::now()->format('YmdHis') . '.xlsx';
 
-            // Stream file ke browser - FIXED VERSION
-            $response = new StreamedResponse(function () use ($spreadsheet) {
-                $writer = new Xlsx($spreadsheet);
+            // Stream file to browser
+            $writer = new Xlsx($spreadsheet);
+
+            $response = new StreamedResponse(function () use ($writer) {
                 $writer->save('php://output');
             });
 
             $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
-            $response->headers->set('Cache-Control', 'max-age=0');
-            $response->headers->set('Pragma', 'public');
-
-            Log::info('Export Excel completed successfully');
+            $response->headers->set('Content-Disposition', 'attachment;filename="' . $filename . '"');
+            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', '0');
 
             return $response;
         } catch (\Exception $e) {
@@ -359,14 +374,11 @@ class ProductionProduksiReportController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal export laporan produksi: ' . $e->getMessage()
+                'message' => 'Failed to export production report: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Get statistik real-time untuk dashboard
-     */
     public function getRealTimeStats()
     {
         try {
@@ -406,13 +418,10 @@ class ProductionProduksiReportController extends Controller
             return response()->json([
                 'success' => false,
                 'data' => []
-            ]);
+            ], 500);
         }
     }
 
-    /**
-     * Preview laporan (untuk modal detail)
-     */
     public function preview($id)
     {
         try {
