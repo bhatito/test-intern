@@ -1,4 +1,5 @@
 <script setup>
+// The script section remains unchanged
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import PPICLayout from '@/layouts/PPICLayout.vue'
@@ -233,69 +234,69 @@ onMounted(() => {
 
 <template>
   <PPICLayout>
-    <div class="space-y-6">
+    <div class="space-y-6 px-4 sm:px-6">
       <!-- HEADER -->
-      <div class="bg-white rounded-xl shadow p-6">
-        <div class="flex justify-between items-center mb-6">
+      <div class="bg-white rounded-xl shadow p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h1 class="text-2xl font-bold text-gray-800">Rencana Produksi</h1>
-            <p class="text-gray-600">Kelola rencana produksi dan monitoring status persetujuan</p>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Rencana Produksi</h1>
+            <p class="text-sm sm:text-base text-gray-600">Kelola rencana produksi dan monitoring status persetujuan</p>
           </div>
         </div>
 
         <!-- STATISTICS -->
-        <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
-          <div class="bg-blue-50 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-blue-600">{{ statistics.total }}</div>
-            <div class="text-sm text-blue-800">Total</div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4 mb-6">
+          <div class="bg-blue-50 rounded-lg p-3 sm:p-4 text-center">
+            <div class="text-xl sm:text-2xl font-bold text-blue-600">{{ statistics.total }}</div>
+            <div class="text-xs sm:text-sm text-blue-800">Total</div>
           </div>
-          <div class="bg-gray-50 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-gray-600">{{ statistics.draft }}</div>
-            <div class="text-sm text-gray-800">Draft</div>
+          <div class="bg-gray-50 rounded-lg p-3 sm:p-4 text-center">
+            <div class="text-xl sm:text-2xl font-bold text-gray-600">{{ statistics.draft }}</div>
+            <div class="text-xs sm:text-sm text-gray-800">Draft</div>
           </div>
-          <div class="bg-yellow-50 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-yellow-600">{{ statistics.menunggu }}</div>
-            <div class="text-sm text-yellow-800">Menunggu</div>
+          <div class="bg-yellow-50 rounded-lg p-3 sm:p-4 text-center">
+            <div class="text-xl sm:text-2xl font-bold text-yellow-600">{{ statistics.menunggu }}</div>
+            <div class="text-xs sm:text-sm text-yellow-800">Menunggu</div>
           </div>
-          <div class="bg-green-50 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-green-600">{{ statistics.disetujui }}</div>
-            <div class="text-sm text-green-800">Disetujui</div>
+          <div class="bg-green-50 rounded-lg p-3 sm:p-4 text-center">
+            <div class="text-xl sm:text-2xl font-bold text-green-600">{{ statistics.disetujui }}</div>
+            <div class="text-xs sm:text-sm text-green-800">Disetujui</div>
           </div>
-          <div class="bg-red-50 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-red-600">{{ statistics.ditolak }}</div>
-            <div class="text-sm text-red-800">Ditolak</div>
+          <div class="bg-red-50 rounded-lg p-3 sm:p-4 text-center">
+            <div class="text-xl sm:text-2xl font-bold text-red-600">{{ statistics.ditolak }}</div>
+            <div class="text-xs sm:text-sm text-red-800">Ditolak</div>
           </div>
-          <div class="bg-indigo-50 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-indigo-600">{{ statistics.menjadi_order }}</div>
-            <div class="text-sm text-indigo-800">Menjadi Order</div>
+          <div class="bg-indigo-50 rounded-lg p-3 sm:p-4 text-center">
+            <div class="text-xl sm:text-2xl font-bold text-indigo-600">{{ statistics.menjadi_order }}</div>
+            <div class="text-xs sm:text-sm text-indigo-800">Menjadi Order</div>
           </div>
         </div>
       </div>
 
-      <div class="grid lg:grid-cols-3 gap-6">
+      <div class="grid lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- FORM TAMBAH RENCANA -->
         <div class="lg:col-span-1">
-          <div class="bg-white rounded-xl shadow p-6 sticky top-6">
-            <h2 class="text-lg font-semibold mb-4 text-gray-800">Buat Rencana Baru</h2>
+          <div class="bg-white rounded-xl shadow p-4 sm:p-6">
+            <h2 class="text-base sm:text-lg font-semibold mb-4 text-gray-800">Buat Rencana Baru</h2>
 
             <!-- PESAN SUKSES -->
             <div v-if="successMsg" class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p class="text-green-800 text-sm">{{ successMsg }}</p>
+              <p class="text-sm sm:text-base text-green-800">{{ successMsg }}</p>
             </div>
 
             <!-- PESAN ERROR -->
             <div v-if="errorMsg" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p class="text-red-800 text-sm">{{ errorMsg }}</p>
+              <p class="text-sm sm:text-base text-red-800">{{ errorMsg }}</p>
             </div>
 
             <form @submit.prevent="submitForm" class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+                <label class="block text-sm sm:text-base font-medium text-gray-700 mb-1">
                   Produk <span class="text-red-500">*</span>
                 </label>
                 <select 
                   v-model="form.produk_id" 
-                  class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full border border-gray-300 rounded-lg p-2.5 sm:p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
                   <option value="">Pilih Produk</option>
@@ -306,40 +307,40 @@ onMounted(() => {
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+                <label class="block text-sm sm:text-base font-medium text-gray-700 mb-1">
                   Jumlah Produksi <span class="text-red-500">*</span>
                 </label>
                 <input 
                   v-model="form.jumlah" 
                   type="number" 
                   min="1" 
-                  class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full border border-gray-300 rounded-lg p-2.5 sm:p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Masukkan jumlah"
                   required
                 />
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+                <label class="block text-sm sm:text-base font-medium text-gray-700 mb-1">
                   Batas Selesai <span class="text-red-500">*</span>
                 </label>
                 <input 
                   v-model="form.batas_selesai" 
                   type="date" 
-                  class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full border border-gray-300 rounded-lg p-2.5 sm:p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
-                <p class="text-xs text-gray-500 mt-1">Target penyelesaian produksi</p>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Target penyelesaian produksi</p>
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+                <label class="block text-sm sm:text-base font-medium text-gray-700 mb-1">
                   Catatan
                 </label>
                 <textarea 
                   v-model="form.catatan" 
                   rows="3"
-                  class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full border border-gray-300 rounded-lg p-2.5 sm:p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Tambahkan catatan jika diperlukan..."
                 ></textarea>
               </div>
@@ -347,7 +348,7 @@ onMounted(() => {
               <button 
                 type="submit" 
                 :disabled="loading"
-                class="w-full bg-blue-600 text-white rounded-lg p-3 font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                class="w-full bg-blue-600 text-white rounded-lg p-2.5 sm:p-3 text-sm sm:text-base font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <span v-if="loading">Menyimpan...</span>
                 <span v-else>Simpan Rencana Produksi</span>
@@ -360,15 +361,15 @@ onMounted(() => {
         <div class="lg:col-span-2">
           <div class="bg-white rounded-xl shadow">
             <!-- HEADER TABEL -->
-            <div class="p-6 border-b border-gray-200">
+            <div class="p-4 sm:p-6 border-b border-gray-200">
               <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 class="text-lg font-semibold text-gray-800">Daftar Rencana Produksi</h2>
+                <h2 class="text-base sm:text-lg font-semibold text-gray-800">Daftar Rencana Produksi</h2>
                 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
                   <!-- FILTER STATUS -->
                   <select 
                     v-model="selectedStatus" 
-                    class="border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    class="flex-1 sm:flex-none border border-gray-300 rounded-lg p-2 text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Semua Status</option>
                     <option value="draft">Draft</option>
@@ -393,75 +394,123 @@ onMounted(() => {
               </div>
             </div>
 
-            <!-- TABEL -->
-            <div class="p-6">
+            <!-- TABEL DAN CARD VIEW -->
+            <div class="p-4 sm:p-6">
               <div v-if="loading" class="text-center py-8">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p class="text-gray-500 mt-2">Memuat data...</p>
+                <p class="text-gray-500 mt-2 text-sm sm:text-base">Memuat data...</p>
               </div>
 
               <div v-else-if="!filteredRencana.length" class="text-center py-8">
                 <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <p class="text-gray-500">Tidak ada rencana produksi</p>
-                <p class="text-sm text-gray-400 mt-1">Buat rencana baru menggunakan form di samping</p>
+                <p class="text-gray-500 text-sm sm:text-base">Tidak ada rencana produksi</p>
+                <p class="text-xs sm:text-sm text-gray-400 mt-1">Buat rencana baru menggunakan form di samping</p>
               </div>
 
-              <div v-else class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Rencana</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produk</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batas Selesai</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="rencana in filteredRencana" :key="rencana.id" class="hover:bg-gray-50 transition-colors">
-                      <td class="px-4 py-4 whitespace-nowrap">
-                        <div class="font-medium text-gray-900">{{ rencana.nomor_rencana }}</div>
-                        <div class="text-xs text-gray-500">{{ formatDate(rencana.created_at) }}</div>
-                      </td>
-                      <td class="px-4 py-4">
-                        <div class="font-medium text-gray-900">{{ rencana.produk?.nama }}</div>
-                        <div class="text-xs text-gray-500">{{ rencana.produk?.kode }}</div>
-                      </td>
-                      <td class="px-4 py-4 whitespace-nowrap">
-                        <span class="font-medium text-gray-900">{{ rencana.jumlah?.toLocaleString() }}</span>
-                        <span class="text-xs text-gray-500 ml-1">{{ rencana.produk?.satuan || 'pcs' }}</span>
-                      </td>
-                      <td class="px-4 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">{{ formatDate(rencana.batas_selesai) }}</div>
-                      </td>
-                      <td class="px-4 py-4 whitespace-nowrap">
+              <div v-else>
+                <!-- TABLE VIEW (DESKTOP) -->
+                <div class="hidden md:block overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Nomor Rencana</th>
+                        <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Produk</th>
+                        <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                        <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Batas Selesai</th>
+                        <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      <tr v-for="rencana in filteredRencana" :key="rencana.id" class="hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-4 whitespace-nowrap">
+                          <div class="font-medium text-gray-900 text-sm sm:text-base">{{ rencana.nomor_rencana }}</div>
+                          <div class="text-xs text-gray-500">{{ formatDate(rencana.created_at) }}</div>
+                        </td>
+                        <td class="px-4 py-4">
+                          <div class="font-medium text-gray-900 text-sm sm:text-base">{{ rencana.produk?.nama }}</div>
+                          <div class="text-xs text-gray-500">{{ rencana.produk?.kode }}</div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                          <span class="font-medium text-gray-900 text-sm sm:text-base">{{ rencana.jumlah?.toLocaleString() }}</span>
+                          <span class="text-xs text-gray-500 ml-1">{{ rencana.produk?.satuan || 'pcs' }}</span>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                          <div class="text-sm sm:text-base text-gray-900">{{ formatDate(rencana.batas_selesai) }}</div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                          <span 
+                            :class="['px-2 py-1 text-xs sm:text-sm font-medium rounded-full', getStatusBadge(rencana.status).class]"
+                          >
+                            {{ getStatusBadge(rencana.status).label }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm">
+                          <div class="flex gap-2">
+                            <button
+                              v-for="button in getActionButtons(rencana)"
+                              :key="button.label"
+                              @click="button.action"
+                              :class="['px-3 py-1 text-xs sm:text-sm rounded transition-colors', button.class]"
+                            >
+                              {{ button.icon }} {{ button.label }}
+                            </button>
+                            <span v-if="getActionButtons(rencana).length === 0" class="text-gray-400 text-xs sm:text-sm">
+                              Tidak ada aksi
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- CARD VIEW (MOBILE) -->
+                <div class="md:hidden space-y-4">
+                  <div 
+                    v-for="rencana in filteredRencana" 
+                    :key="rencana.id" 
+                    class="bg-gray-50 rounded-lg p-4 shadow-sm"
+                  >
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                      <div class="font-medium text-gray-700">Nomor Rencana</div>
+                      <div>{{ rencana.nomor_rencana }} <br> <span class="text-xs text-gray-500">{{ formatDate(rencana.created_at) }}</span></div>
+                      
+                      <div class="font-medium text-gray-700">Produk</div>
+                      <div>{{ rencana.produk?.nama }} <br> <span class="text-xs text-gray-500">{{ rencana.produk?.kode }}</span></div>
+                      
+                      <div class="font-medium text-gray-700">Jumlah</div>
+                      <div>{{ rencana.jumlah?.toLocaleString() }} {{ rencana.produk?.satuan || 'pcs' }}</div>
+                      
+                      <div class="font-medium text-gray-700">Batas Selesai</div>
+                      <div>{{ formatDate(rencana.batas_selesai) }}</div>
+                      
+                      <div class="font-medium text-gray-700">Status</div>
+                      <div>
                         <span 
                           :class="['px-2 py-1 text-xs font-medium rounded-full', getStatusBadge(rencana.status).class]"
                         >
                           {{ getStatusBadge(rencana.status).label }}
                         </span>
-                      </td>
-                      <td class="px-4 py-4 whitespace-nowrap text-sm">
-                        <div class="flex gap-2">
-                          <button
-                            v-for="button in getActionButtons(rencana)"
-                            :key="button.label"
-                            @click="button.action"
-                            :class="['px-3 py-1 text-xs rounded transition-colors', button.class]"
-                          >
-                            {{ button.icon }} {{ button.label }}
-                          </button>
-                          <span v-if="getActionButtons(rencana).length === 0" class="text-gray-400 text-xs">
-                            Tidak ada aksi
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                      </div>
+                    </div>
+                    <div class="mt-3 flex gap-2 flex-wrap">
+                      <button
+                        v-for="button in getActionButtons(rencana)"
+                        :key="button.label"
+                        @click="button.action"
+                        :class="['px-3 py-1.5 text-xs rounded transition-colors flex-1 text-center', button.class]"
+                      >
+                        {{ button.icon }} {{ button.label }}
+                      </button>
+                      <span v-if="getActionButtons(rencana).length === 0" class="text-gray-400 text-xs">
+                        Tidak ada aksi
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
