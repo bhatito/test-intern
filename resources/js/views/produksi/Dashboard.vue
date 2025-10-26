@@ -360,13 +360,6 @@ onMounted(() => {
                   >
                     Mulai Produksi
                   </RouterLink>
-                  <RouterLink 
-                    v-else
-                    :to="`/produksi/order-produksi/${order.id}`"
-                    class="flex-1 text-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Lihat Detail
-                  </RouterLink>
                 </div>
               </div>
             </div>
