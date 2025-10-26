@@ -9,7 +9,7 @@ const rencanaList = ref([])
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await axios.get('/api/manager/approvals')
+    const res = await axios.get('/api/produksi/manager/approvals')
     rencanaList.value = res.data
   } finally {
     loading.value = false
@@ -18,13 +18,13 @@ const loadData = async () => {
 
 const approve = async (id) => {
   if (!confirm('Setujui rencana ini?')) return
-  await axios.put(`/api/manager/approvals/${id}`, { status: 'disetujui' })
+  await axios.put(`/api/produksi/manager/approvals/${id}`, { status: 'disetujui' })
   await loadData()
 }
 
 const reject = async (id) => {
   const catatan = prompt('Masukkan alasan penolakan:')
-  await axios.put(`/api/manager/approvals/${id}`, {
+  await axios.put(`/api/produksi/manager/approvals/${id}`, {
     status: 'ditolak',
     catatan,
   })

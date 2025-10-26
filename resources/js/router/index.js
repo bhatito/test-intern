@@ -78,7 +78,7 @@ const router = createRouter({
       meta: { 
         requiresAuth: true, 
         department: 'produksi',
-        role: 'managerproduksi' 
+        role: 'managerpproduksi' 
       }
     },
     { 

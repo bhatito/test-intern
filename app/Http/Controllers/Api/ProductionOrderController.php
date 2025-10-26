@@ -60,7 +60,7 @@ class ProductionOrderController extends Controller
                 'mulai_pada' => now(),
                 'dikerjakan_oleh' => Auth::id(),
             ]);
-            $statusSebelumnya = $order->status;
+            $statusSebelumnya = 'menunggu';
 
 
             // Catat histori
@@ -104,7 +104,6 @@ class ProductionOrderController extends Controller
     {
         DB::beginTransaction();
         try {
-            // Validasi status
             if ($order->status !== 'dalam_proses') {
                 return response()->json([
                     'success' => false,
@@ -118,7 +117,6 @@ class ProductionOrderController extends Controller
                 'catatan' => 'nullable|string|max:500',
             ]);
 
-            // Validasi logika bisnis
             if ($validated['jumlah_reject'] > $validated['jumlah_aktual']) {
                 return response()->json([
                     'success' => false,
@@ -126,7 +124,8 @@ class ProductionOrderController extends Controller
                 ], 422);
             }
 
-            // Update order
+            // ✅ Update order selesai
+            $statusSebelumnya = $order->status;
             $order->update([
                 'status' => 'selesai',
                 'selesai_pada' => now(),
@@ -134,22 +133,35 @@ class ProductionOrderController extends Controller
                 'jumlah_reject' => $validated['jumlah_reject'],
                 'catatan' => $validated['catatan'] ?? null,
             ]);
-            $statusSebelumnya = $order->status;
 
-            // Catat histori
+            // ✅ Catat histori order
             ProductionOrderHistory::create([
                 'order_id' => $order->id,
                 'status_sebelumnya' => $statusSebelumnya,
                 'status_baru' => 'selesai',
                 'diubah_oleh' => Auth::id(),
-                'keterangan' => 'Memulai proses produksi',
+                'keterangan' => 'Selesai proses produksi',
                 'diubah_pada' => now(),
             ]);
 
+            // ✅ Optional: update status rencana jika perlu
+            // if ($order->rencana) {
+            //     $order->rencana->update([
+            //         'status' => 'selesai'
+            //     ]);
+
+            //     $order->rencana->histories()->create([
+            //         'user_id' => Auth::id(),
+            //         'aksi' => 'selesai',
+            //         'status_sebelum' => 'menjadi_order',
+            //         'status_baru' => 'selesai',
+            //         'keterangan' => 'Rencana Produksi Telah Selesai',
+            //         'waktu_aksi' => now(),
+            //     ]);
+            // }
 
             DB::commit();
 
-            // Load ulang data
             $order->load(['produk', 'rencana', 'pekerja']);
 
             return response()->json([
@@ -159,7 +171,6 @@ class ProductionOrderController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-
             Log::error('Error completing production order: ' . $e->getMessage(), [
                 'order_id' => $order->id,
                 'user_id' => Auth::id()
@@ -167,10 +178,11 @@ class ProductionOrderController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyelesaikan order produksi: ' . $e->getMessage()
+                'message' => 'Gagal menyelesaikan order produksi'
             ], 500);
         }
     }
+
 
     /** ℹ️ Detail order */
     public function show(ProductionOrder $order)

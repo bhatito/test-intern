@@ -10,7 +10,7 @@ const filter = ref('')
 const loadOrders = async () => {
   loading.value = true
   try {
-    const res = await axios.get('/api/production-orders', {
+    const res = await axios.get('/api/produksi/production-orders', {
       params: { status: filter.value || undefined }
     })
     orders.value = res.data.data || []
@@ -26,7 +26,7 @@ const startOrder = async (order) => {
   if (!confirm(`Mulai produksi untuk order ${order.nomor_order}?`)) return
   
   try {
-    const response = await axios.put(`/api/production-orders/${order.id}/start`)
+    const response = await axios.put(`/api/produksi/production-orders/${order.id}/start`)
     
     if (response.data.success) {
       alert('Order produksi berhasil dimulai')
@@ -79,7 +79,7 @@ Lanjutkan penyelesaian order?`
   const catatan = prompt('Catatan produksi (opsional):') || undefined
 
   try {
-    const response = await axios.put(`/api/production-orders/${order.id}/complete`, {
+    const response = await axios.put(`/api/produksi/production-orders/${order.id}/complete`, {
       jumlah_aktual, 
       jumlah_reject, 
       catatan

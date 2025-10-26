@@ -25,9 +25,9 @@ const submitForm = async () => {
   errorMsg.value = ''
   try {
     if (editMode.value) {
-      await axios.put(`/api/master-products/${form.value.id}`, form.value)
+      await axios.put(`/api/ppic/master-products/${form.value.id}`, form.value)
     } else {
-      await axios.post('/api/master-products', form.value)
+      await axios.post('/api/ppic/master-products', form.value)
     }
     await loadData()
     resetForm()
@@ -43,7 +43,7 @@ const editProduk = (item) => {
 
 const deleteProduk = async (id) => {
   if (!confirm('Hapus produk ini?')) return
-  await axios.delete(`/api/master-products/${id}`)
+  await axios.delete(`/api/ppic/master-products/${id}`)
   await loadData()
 }
 

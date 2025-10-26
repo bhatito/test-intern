@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\MasterProductController;
 use App\Http\Controllers\Api\ProductionOrderController;
 use App\Http\Controllers\Api\ProductionPlanController;
 use App\Http\Controllers\DashboardPPICController;
+use App\Http\Controllers\DashboardProduksiController;
 use App\Http\Controllers\ProductionReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -45,11 +46,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/production-reports/export', [ProductionReportController::class, 'export']);
     });
 
+    // routes/api.php
+
     // 🔸 Khusus Produksi
-    Route::middleware('department:produksi')->group(function () {
-        Route::get('/produksi/dashboard', fn() => response()->json(['message' => 'Selamat datang di dashboard Produksi']));
+    Route::prefix('produksi')->middleware('department:produksi')->group(function () {
+        // Dashboard Produksi
+        Route::get('/dashboard', [DashboardProduksiController::class, 'index']);
+        Route::get('/dashboard/stats', [DashboardProduksiController::class, 'getDashboardStats']);
+        Route::get('/dashboard/pending-approvals-count', [DashboardProduksiController::class, 'getPendingApprovalsCount']);
+        Route::get('/dashboard/approved-orders-count', [DashboardProduksiController::class, 'getApprovedOrdersCount']);
+
+        // Manager Approvals
         Route::get('/manager/approvals', [ManagerApprovalController::class, 'index']);
         Route::put('/manager/approvals/{plan}', [ManagerApprovalController::class, 'update']);
+        Route::get('/manager/approvals/stats', [ManagerApprovalController::class, 'stats']);
+
+        // Production Orders
         Route::get('/production-orders', [ProductionOrderController::class, 'index']);
         Route::get('/production-orders/stats', [ProductionOrderController::class, 'stats']);
         Route::get('/production-orders/search', [ProductionOrderController::class, 'search']);

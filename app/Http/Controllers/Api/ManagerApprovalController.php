@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ProductionPlan;
 use App\Models\ProductionOrder;
+use App\Models\ProductionOrderHistory;
 use App\Services\ProductionPlanHistoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,9 +48,9 @@ class ManagerApprovalController extends Controller
             ]);
 
             if ($validated['status'] === 'disetujui') {
-                // APPROVE PROCESS
+                // ✅ APPROVE PROCESS - CATAT 2 LOG
 
-                // Update rencana menjadi disetujui
+                // LOG 1: Update rencana menjadi disetujui
                 $plan->update([
                     'status' => 'disetujui',
                     'disetujui_oleh' => Auth::id(),
@@ -58,10 +59,10 @@ class ManagerApprovalController extends Controller
                     'catatan' => $validated['catatan'] ?? null,
                 ]);
 
-                // Catat history persetujuan
+                // Catat history PERSETUJUAN rencana
                 ProductionPlanHistoryService::catatPersetujuan(
                     $plan,
-                    $statusSebelum,
+                    $statusSebelum, // menunggu_persetujuan
                     $validated['catatan'] ?? null
                 );
 
@@ -76,12 +77,34 @@ class ManagerApprovalController extends Controller
                     'dikerjakan_oleh' => null,
                 ]);
 
-                // Update status rencana menjadi 'menjadi_order'
-                $statusSebelumOrder = $plan->status; // Simpan status sebelum update ke menjadi_order
+                // Generate nomor order
+                if (!$productionOrder->nomor_order) {
+                    $latestOrder = ProductionOrder::latest()->first();
+                    $no = $latestOrder ? intval(substr($latestOrder->nomor_order, -4)) + 1 : 1;
+                    $productionOrder->update([
+                        'nomor_order' => 'ORD-' . str_pad($no, 4, '0', STR_PAD_LEFT)
+                    ]);
+                }
+
+                // LOG 2: Update status rencana menjadi 'menjadi_order'
+                $statusSebelumOrder = $plan->status; // disetujui
                 $plan->update(['status' => 'menjadi_order']);
 
-                // Catat history menjadi order produksi
-                ProductionPlanHistoryService::catatMenjadiOrder($plan, $statusSebelumOrder);
+                // Catat history MENJADI ORDER
+                ProductionPlanHistoryService::catatMenjadiOrder(
+                    $plan,
+                    $statusSebelumOrder // disetujui
+                );
+
+                // ✅ CATAT LOG 3: History untuk Production Order (baru dibuat)
+                ProductionOrderHistory::create([
+                    'order_id' => $productionOrder->id,
+                    'status_sebelumnya' => null, // Tidak ada status sebelumnya
+                    'status_baru' => 'menunggu',
+                    'diubah_oleh' => Auth::id(),
+                    'keterangan' => 'Order produksi dibuat dari rencana: ' . $plan->nomor_rencana,
+                    'diubah_pada' => now()
+                ]);
 
                 DB::commit();
 
@@ -91,12 +114,17 @@ class ManagerApprovalController extends Controller
                     'message' => 'Rencana produksi berhasil disetujui dan order produksi telah dibuat',
                     'order_produksi' => [
                         'id' => $productionOrder->id,
-                        'nomor_order' => $productionOrder->nomor_order ?? $productionOrder->id,
+                        'nomor_order' => $productionOrder->nomor_order,
                         'status' => $productionOrder->status
+                    ],
+                    'history_logs' => [
+                        'persetujuan_rencana',
+                        'menjadi_order_produksi',
+                        'pembuatan_order_baru'
                     ]
                 ]);
             } else {
-                // REJECT PROCESS
+                // ❌ REJECT PROCESS - CATAT 1 LOG
 
                 // Update rencana menjadi ditolak
                 $plan->update([
@@ -106,10 +134,10 @@ class ManagerApprovalController extends Controller
                     'catatan' => $validated['catatan'] ?? 'Tidak ada catatan',
                 ]);
 
-                // Catat history penolakan
+                // Catat history PENOLAKAN rencana
                 ProductionPlanHistoryService::catatPenolakan(
                     $plan,
-                    $statusSebelum,
+                    $statusSebelum, // menunggu_persetujuan
                     $validated['catatan'] ?? 'Tidak ada alasan'
                 );
 
@@ -118,7 +146,10 @@ class ManagerApprovalController extends Controller
                 return response()->json([
                     'success' => true,
                     'data' => $plan->fresh(['produk', 'pembuat', 'penyetuju']),
-                    'message' => 'Rencana produksi berhasil ditolak'
+                    'message' => 'Rencana produksi berhasil ditolak',
+                    'history_logs' => [
+                        'penolakan_rencana'
+                    ]
                 ]);
             }
         } catch (\Exception $e) {
@@ -134,6 +165,36 @@ class ManagerApprovalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /** 📊 Statistik persetujuan */
+    public function stats()
+    {
+        try {
+            $stats = [
+                'menunggu_persetujuan' => ProductionPlan::where('status', 'menunggu_persetujuan')->count(),
+                'total_diselesaikan_hari_ini' => ProductionPlan::whereDate('disetujui_pada', now()->today())
+                    ->where('status', 'disetujui')
+                    ->count(),
+                'total_ditolak_bulan_ini' => ProductionPlan::whereMonth('ditolak_pada', now()->month)
+                    ->whereYear('ditolak_pada', now()->year)
+                    ->where('status', 'ditolak')
+                    ->count()
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $stats,
+                'message' => 'Statistik persetujuan berhasil diambil'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching approval stats: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil statistik: ' . $e->getMessage()
             ], 500);
         }
     }
