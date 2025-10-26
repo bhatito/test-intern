@@ -4,11 +4,13 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ManagerApprovalController;
 use App\Http\Controllers\Api\MasterProductController;
 use App\Http\Controllers\Api\ProductionOrderController;
+use App\Http\Controllers\Api\ProductionOrderHistoryController;
 use App\Http\Controllers\Api\ProductionPlanController;
 use App\Http\Controllers\DashboardPPICController;
 use App\Http\Controllers\DashboardProduksiController;
 use App\Http\Controllers\ProductionProduksiReportController;
 use App\Http\Controllers\ProductionReportController;
+use App\Models\ProductionOrderHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,7 +32,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/production-plans/{plan}/submit', [ProductionPlanController::class, 'submit']);
         Route::put('/production-plans/{plan}/cancel', [ProductionPlanController::class, 'cancelSubmission']);
         Route::get('/production-plans/{plan}/history', [ProductionPlanController::class, 'history']);
-
         Route::get('/production-reports', [ProductionReportController::class, 'index']);
         Route::post('/production-reports/generate', [ProductionReportController::class, 'generate']);
         Route::get('/production-reports/export', [ProductionReportController::class, 'export']);
@@ -57,5 +58,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/laporan/{id}/export-excel', [ProductionProduksiReportController::class, 'exportExcel']);
         Route::get('/laporan/{id}/preview', [ProductionProduksiReportController::class, 'preview']);
         Route::get('/laporan/stats/realtime', [ProductionProduksiReportController::class, 'getRealTimeStats']);
+        Route::get('/order-history/{orderId}', [ProductionOrderHistoryController::class, 'getOrderHistory']);
+        Route::get('/orders', [ProductionOrderHistoryController::class, 'getAllOrders']);
+        Route::get('/orders/statistics', [ProductionOrderHistoryController::class, 'getStatistics']);
+        Route::get('/histories', [ProductionOrderHistoryController::class, 'getAllHistories']);
     });
 });

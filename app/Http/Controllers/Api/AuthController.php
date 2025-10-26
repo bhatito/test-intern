@@ -29,7 +29,6 @@ class AuthController extends Controller
             return response()->json(['message' => 'Departemen tidak sesuai'], 403);
         }
 
-        // single-session (opsional): hapus token lama
         $user->tokens()->delete();
 
         $token = $user->createToken('api')->plainTextToken;

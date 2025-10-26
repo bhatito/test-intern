@@ -21,6 +21,11 @@ class ProductionOrderHistory extends Model
         return $this->belongsTo(ProductionOrder::class, 'order_id');
     }
 
+    public function changedBy()
+    {
+        return $this->belongsTo(User::class, 'diubah_oleh');
+    }
+
     // User yang mengubah status
     public function pengubah()
     {

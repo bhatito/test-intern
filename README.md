@@ -1,50 +1,69 @@
-Sistem ini merupakan aplikasi internal berbasis Laravel 10 dan Vue 3 (dengan Vite) yang digunakan untuk mengelola aktivitas antara Departemen PPIC dan Departemen Produksi. Aplikasi ini mendukung autentikasi multi-departemen menggunakan Laravel Sanctum dengan pembagian peran pada masing-masing departemen. Akses pengguna dibatasi sesuai departemen dan perannya. Aplikasi ini menerapkan Single Page Application menggunakan Vue Router dan Tailwind CSS, serta menyediakan dashboard terpisah untuk PPIC dan Produksi. Sistem ini dibuat sebagai bagian dari test intern yang saya kerjakan.
+PPIC Produksi System
+
+Sistem ini adalah aplikasi internal berbasis Laravel 10 dan Vue 3 (dengan Vite) untuk mengelola aktivitas antara Departemen PPIC dan Departemen Produksi. Aplikasi ini mendukung autentikasi multi-departemen menggunakan Laravel Sanctum dengan pembagian peran pada masing-masing departemen. Akses pengguna dibatasi berdasarkan departemen dan peran. Aplikasi ini menerapkan Single Page Application menggunakan Vue Router dan Tailwind CSS, dengan dashboard terpisah untuk PPIC dan Produksi.
+
+Prasyarat
+- PHP >= 8.1
+- Composer
+- Node.js >= 16
+- NPM
+- MySQL
 
 Instalasi
-- git clone https://github.com/bhatito/test-intern.git
 
-Install dependency Laravel
-- composer install
+1. Clone repository:
+   git clone https://github.com/bhatito/test-intern.git
 
-Install dependency frontend
-- npm install
+2. Masuk ke direktori proyek:
+   cd test-intern
 
-Konfigurasi .env
-- cp .env.example .env
+3. Install dependency Laravel:
+   composer install
 
+4. Install dependency frontend:
+   npm install
 
-Contoh isi .env
-APP_NAME="PPIC PRODUKSI SYSTEM"
-APP_URL=http://localhost:8000
+5. Konfigurasi file .env:
+   cp .env.example .env
 
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=ppic_produksi
-DB_USERNAME=root
-DB_PASSWORD=
+6. Edit file .env sesuai dengan konfigurasi database Anda. Contoh:
+   APP_NAME="PPIC PRODUKSI SYSTEM"
+   APP_URL=http://localhost:8000
 
-# Sanctum (opsional)
-SANCTUM_STATEFUL_DOMAINS=localhost:8000,localhost:5173
-SESSION_DOMAIN=localhost
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=ppic_produksi
+   DB_USERNAME=root
+   DB_PASSWORD=
 
-Generate key & migrate database
-- php artisan key:generate
-- php artisan migrate --seed
+   SANCTUM_STATEFUL_DOMAINS=localhost:8000,localhost:5173
+   SESSION_DOMAIN=localhost
 
-data user
+7. Generate application key dan migrasi database:
+   php artisan key:generate
+   php artisan migrate --seed atau import file database di mysql dengan nama file database.sql
 
-Data User 
-Departemen	Role	Email	Password
-PPIC	Manager	manager.ppic@example.com	password123
-PPIC	Staff	staff.ppic@example.com	password123
-Produksi	Manager	manager.produksi@example.com	password123
-Produksi	Staff	staff.produksi@example.com	password123
+Data Pengguna
+Berikut adalah data pengguna awal yang dibuat melalui seeder:
+
+Departemen  Role    Email                          Password
+PPIC        Manager manager.ppic@example.com      password123
+PPIC        Staff   staff.ppic@example.com        password123
+Produksi    Manager manager.produksi@example.com  password123
+Produksi    Staff   staff.produksi@example.com    password123
 
 Menjalankan Aplikasi
 
-jalankan di terminal yang berbeda 
-- terminal 1
-php artisan serve
-- terminal 2
-npm run dev
+1. Jalankan server Laravel di terminal pertama:
+   php artisan serve
+
+2. Jalankan server frontend (Vite) di terminal kedua:
+   npm run dev
+
+3. Akses aplikasi melalui browser di http://localhost:8000.
+
+Catatan
+- Pastikan Nama Database sesuai MySQL sudah berjalan sebelum melakukan migrasi database.
+- Sesuaikan konfigurasi .env dengan environment Anda.
+- Aplikasi ini menggunakan Laravel Sanctum untuk autentikasi, pastikan konfigurasi SANCTUM_STATEFUL_DOMAINS sesuai dengan domain yang digunakan.

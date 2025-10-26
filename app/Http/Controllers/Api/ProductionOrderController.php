@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class ProductionOrderController extends Controller
 {
-    /** 📋 List order untuk produksi */
+
     public function index(Request $request)
     {
         try {
@@ -41,12 +41,10 @@ class ProductionOrderController extends Controller
         }
     }
 
-    /** ▶️ Mulai produksi */
     public function start(ProductionOrder $order)
     {
         DB::beginTransaction();
         try {
-            // Validasi status
             if ($order->status !== 'menunggu') {
                 return response()->json([
                     'success' => false,
@@ -54,7 +52,6 @@ class ProductionOrderController extends Controller
                 ], 400);
             }
 
-            // Update order
             $order->update([
                 'status' => 'dalam_proses',
                 'mulai_pada' => now(),
@@ -62,8 +59,6 @@ class ProductionOrderController extends Controller
             ]);
             $statusSebelumnya = 'menunggu';
 
-
-            // Catat histori
             ProductionOrderHistory::create([
                 'order_id' => $order->id,
                 'status_sebelumnya' => $statusSebelumnya,
@@ -75,7 +70,6 @@ class ProductionOrderController extends Controller
 
             DB::commit();
 
-            // Load ulang data dengan relasi
             $order->load(['produk', 'rencana', 'pekerja']);
 
             return response()->json([
@@ -99,7 +93,6 @@ class ProductionOrderController extends Controller
         }
     }
 
-    /** ⏹️ Selesaikan produksi */
     public function complete(Request $request, ProductionOrder $order)
     {
         DB::beginTransaction();
@@ -124,7 +117,6 @@ class ProductionOrderController extends Controller
                 ], 422);
             }
 
-            // ✅ Update order selesai
             $statusSebelumnya = $order->status;
             $order->update([
                 'status' => 'selesai',
@@ -134,7 +126,6 @@ class ProductionOrderController extends Controller
                 'catatan' => $validated['catatan'] ?? null,
             ]);
 
-            // ✅ Catat histori order
             ProductionOrderHistory::create([
                 'order_id' => $order->id,
                 'status_sebelumnya' => $statusSebelumnya,
@@ -143,22 +134,6 @@ class ProductionOrderController extends Controller
                 'keterangan' => 'Selesai proses produksi',
                 'diubah_pada' => now(),
             ]);
-
-            // ✅ Optional: update status rencana jika perlu
-            // if ($order->rencana) {
-            //     $order->rencana->update([
-            //         'status' => 'selesai'
-            //     ]);
-
-            //     $order->rencana->histories()->create([
-            //         'user_id' => Auth::id(),
-            //         'aksi' => 'selesai',
-            //         'status_sebelum' => 'menjadi_order',
-            //         'status_baru' => 'selesai',
-            //         'keterangan' => 'Rencana Produksi Telah Selesai',
-            //         'waktu_aksi' => now(),
-            //     ]);
-            // }
 
             DB::commit();
 
@@ -183,8 +158,6 @@ class ProductionOrderController extends Controller
         }
     }
 
-
-    /** ℹ️ Detail order */
     public function show(ProductionOrder $order)
     {
         try {
@@ -203,7 +176,6 @@ class ProductionOrderController extends Controller
         }
     }
 
-    /** 📈 Statistik */
     public function stats()
     {
         try {
@@ -232,7 +204,6 @@ class ProductionOrderController extends Controller
         }
     }
 
-    /** 🔍 Search */
     public function search(Request $request)
     {
         try {

@@ -16,20 +16,16 @@ use Carbon\Carbon;
 class ProductionPlanController extends Controller
 {
 
-
-    /** 📋 List semua rencana produksi dengan filter */
     public function index(Request $request)
     {
         try {
             $query = ProductionPlan::with(['produk', 'pembuat', 'penyetuju'])
                 ->orderBy('created_at', 'desc');
 
-            // Filter by status
             if ($request->has('status') && $request->status) {
                 $query->where('status', $request->status);
             }
 
-            // Filter by periode
             if ($request->has('periode_awal') && $request->has('periode_akhir')) {
                 $query->whereBetween('created_at', [
                     $request->periode_awal,
@@ -37,7 +33,6 @@ class ProductionPlanController extends Controller
                 ]);
             }
 
-            // Filter by produk
             if ($request->has('produk_id') && $request->produk_id) {
                 $query->where('produk_id', $request->produk_id);
             }
@@ -59,7 +54,6 @@ class ProductionPlanController extends Controller
         }
     }
 
-    /** 👁️ Detail rencana produksi */
     public function show(ProductionPlan $plan)
     {
         try {
@@ -78,7 +72,6 @@ class ProductionPlanController extends Controller
         }
     }
 
-    /** ➕ Tambah rencana baru oleh Staff PPIC */
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -90,7 +83,6 @@ class ProductionPlanController extends Controller
                 'catatan' => 'nullable|string|max:500',
             ]);
 
-            // Cek apakah produk exists
             $produk = MasterProduct::find($validated['produk_id']);
             if (!$produk) {
                 return response()->json([
@@ -99,7 +91,6 @@ class ProductionPlanController extends Controller
                 ], 404);
             }
 
-            // Generate nomor rencana otomatis
             $nomorRencana = 'RP-' . date('Ymd') . '-' . str_pad(ProductionPlan::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
 
             $plan = ProductionPlan::create([
@@ -113,13 +104,10 @@ class ProductionPlanController extends Controller
                 'diajukan_pada' => now(),
             ]);
 
-            // Catat history pembuatan dan pengajuan
             ProductionPlanHistoryService::catatPembuatan($plan);
-            // ProductionPlanHistoryService::catatPengajuan($plan);
 
             DB::commit();
 
-            // Load relasi untuk response
             $plan->load(['produk', 'pembuat']);
 
             return response()->json([
@@ -137,12 +125,10 @@ class ProductionPlanController extends Controller
         }
     }
 
-    /** ✏️ Update rencana (hanya jika masih draft/menunggu) */
     public function update(Request $request, ProductionPlan $plan)
     {
         DB::beginTransaction();
         try {
-            // Hanya bisa update jika status masih draft atau menunggu persetujuan
             if (!in_array($plan->status, ['draft', 'menunggu_persetujuan'])) {
                 return response()->json([
                     'success' => false,
@@ -157,12 +143,10 @@ class ProductionPlanController extends Controller
                 'catatan' => 'nullable|string|max:500',
             ]);
 
-            // Simpan status sebelum update untuk history
             $statusSebelum = $plan->status;
 
             $plan->update($validated);
 
-            // Catat history update jika ada perubahan
             if ($plan->wasChanged()) {
                 ProductionPlanHistory::create([
                     'rencana_id' => $plan->id,
@@ -194,12 +178,10 @@ class ProductionPlanController extends Controller
         }
     }
 
-    /** ❌ Hapus rencana (hanya jika masih bisa dihapus) */
     public function destroy(ProductionPlan $plan)
     {
         DB::beginTransaction();
         try {
-            // Hanya bisa hapus jika status masih draft atau menunggu persetujuan
             if (!in_array($plan->status, ['draft', 'menunggu_persetujuan'])) {
                 return response()->json([
                     'success' => false,
@@ -207,7 +189,6 @@ class ProductionPlanController extends Controller
                 ], 403);
             }
 
-            // Catat history sebelum dihapus
             ProductionPlanHistory::create([
                 'rencana_id' => $plan->id,
                 'user_id' => Auth::id(),
@@ -236,7 +217,6 @@ class ProductionPlanController extends Controller
         }
     }
 
-    /** 📊 Statistik rencana produksi */
     public function statistics()
     {
         try {
@@ -263,7 +243,6 @@ class ProductionPlanController extends Controller
         }
     }
 
-    /** 🔍 Cari rencana produksi */
     public function search(Request $request)
     {
         try {
@@ -304,15 +283,13 @@ class ProductionPlanController extends Controller
         }
     }
 
-    /** 📤 Ajukan rencana yang masih draft */
     public function submit(ProductionPlan $plan)
     {
         DB::beginTransaction();
         try {
-            // Simpan status SEBELUM update
+
             $statusSebelum = $plan->status;
 
-            // Validasi: hanya rencana dengan status draft yang bisa diajukan
             if ($statusSebelum !== 'draft') {
                 return response()->json([
                     'success' => false,
@@ -326,7 +303,6 @@ class ProductionPlanController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Catat history pengajuan
             ProductionPlanHistoryService::catatPengajuan($plan);
 
             DB::commit();
@@ -346,7 +322,6 @@ class ProductionPlanController extends Controller
         }
     }
 
-    /** ↩️ Batalkan pengajuan (kembali ke draft) */
     public function cancelSubmission(ProductionPlan $plan)
     {
         DB::beginTransaction();
@@ -363,7 +338,6 @@ class ProductionPlanController extends Controller
                 'diajukan_pada' => null,
             ]);
 
-            // Catat history pembatalan
             ProductionPlanHistory::create([
                 'rencana_id' => $plan->id,
                 'user_id' => Auth::id(),
@@ -391,9 +365,6 @@ class ProductionPlanController extends Controller
         }
     }
 
-    // Di ProductionPlanController - tambahkan method ini
-
-    /** 📜 Get history untuk rencana tertentu */
     public function history(ProductionPlan $plan)
     {
         try {

@@ -15,7 +15,6 @@ use Illuminate\Validation\Rule;
 
 class ManagerApprovalController extends Controller
 {
-    /** 📋 Daftar rencana yang menunggu persetujuan */
     public function index()
     {
         $plans = ProductionPlan::with(['produk', 'pembuat'])
@@ -26,15 +25,13 @@ class ManagerApprovalController extends Controller
         return response()->json($plans);
     }
 
-    /** ✅ Approve atau ❌ Tolak - DENGAN HISTORY TRACKING */
     public function update(Request $request, ProductionPlan $plan)
     {
         DB::beginTransaction();
         try {
-            // Simpan status SEBELUM update
+
             $statusSebelum = $plan->status;
 
-            // Validasi status rencana
             if ($statusSebelum !== 'menunggu_persetujuan') {
                 return response()->json([
                     'success' => false,
@@ -48,9 +45,7 @@ class ManagerApprovalController extends Controller
             ]);
 
             if ($validated['status'] === 'disetujui') {
-                // ✅ APPROVE PROCESS - CATAT 2 LOG
 
-                // LOG 1: Update rencana menjadi disetujui
                 $plan->update([
                     'status' => 'disetujui',
                     'disetujui_oleh' => Auth::id(),
@@ -59,14 +54,12 @@ class ManagerApprovalController extends Controller
                     'catatan' => $validated['catatan'] ?? null,
                 ]);
 
-                // Catat history PERSETUJUAN rencana
                 ProductionPlanHistoryService::catatPersetujuan(
                     $plan,
-                    $statusSebelum, // menunggu_persetujuan
+                    $statusSebelum,
                     $validated['catatan'] ?? null
                 );
 
-                // Buat order produksi otomatis
                 $productionOrder = ProductionOrder::create([
                     'rencana_id' => $plan->id,
                     'produk_id' => $plan->produk_id,
@@ -77,7 +70,6 @@ class ManagerApprovalController extends Controller
                     'dikerjakan_oleh' => null,
                 ]);
 
-                // Generate nomor order
                 if (!$productionOrder->nomor_order) {
                     $latestOrder = ProductionOrder::latest()->first();
                     $no = $latestOrder ? intval(substr($latestOrder->nomor_order, -4)) + 1 : 1;
@@ -86,20 +78,17 @@ class ManagerApprovalController extends Controller
                     ]);
                 }
 
-                // LOG 2: Update status rencana menjadi 'menjadi_order'
-                $statusSebelumOrder = $plan->status; // disetujui
+                $statusSebelumOrder = $plan->status;
                 $plan->update(['status' => 'menjadi_order']);
 
-                // Catat history MENJADI ORDER
                 ProductionPlanHistoryService::catatMenjadiOrder(
                     $plan,
-                    $statusSebelumOrder // disetujui
+                    $statusSebelumOrder
                 );
 
-                // ✅ CATAT LOG 3: History untuk Production Order (baru dibuat)
                 ProductionOrderHistory::create([
                     'order_id' => $productionOrder->id,
-                    'status_sebelumnya' => null, // Tidak ada status sebelumnya
+                    'status_sebelumnya' => null,
                     'status_baru' => 'menunggu',
                     'diubah_oleh' => Auth::id(),
                     'keterangan' => 'Order produksi dibuat dari rencana: ' . $plan->nomor_rencana,
@@ -124,9 +113,7 @@ class ManagerApprovalController extends Controller
                     ]
                 ]);
             } else {
-                // ❌ REJECT PROCESS - CATAT 1 LOG
 
-                // Update rencana menjadi ditolak
                 $plan->update([
                     'status' => 'ditolak',
                     'disetujui_oleh' => Auth::id(),
@@ -134,10 +121,9 @@ class ManagerApprovalController extends Controller
                     'catatan' => $validated['catatan'] ?? 'Tidak ada catatan',
                 ]);
 
-                // Catat history PENOLAKAN rencana
                 ProductionPlanHistoryService::catatPenolakan(
                     $plan,
-                    $statusSebelum, // menunggu_persetujuan
+                    $statusSebelum,
                     $validated['catatan'] ?? 'Tidak ada alasan'
                 );
 
@@ -169,7 +155,6 @@ class ManagerApprovalController extends Controller
         }
     }
 
-    /** 📊 Statistik persetujuan */
     public function stats()
     {
         try {

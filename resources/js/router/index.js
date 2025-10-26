@@ -11,6 +11,7 @@ import OrderProduksi from '@/views/produksi/OrderProduksi.vue'
 import LaporanProduksi from '@/views/produksi/LaporanProduksi.vue'
 import HistoryRencana from '../views/ppic/HistoryRencana.vue'
 import LaporanPPIC from '../views/ppic/LaporanPPIC.vue'
+import HistoryProduksi from '../views/produksi/HistoryProduksi.vue' // Import yang benar
 
 const router = createRouter({
   history: createWebHistory(),
@@ -54,7 +55,7 @@ const router = createRouter({
         role: 'managerppic' 
       }
     },
-     { 
+    { 
       path: '/ppic/laporan-rencana', 
       component: LaporanPPIC,
       meta: { 
@@ -89,6 +90,15 @@ const router = createRouter({
         requiresAuth: true, 
         department: 'produksi',
         role: 'managerpproduksi' 
+      }
+    },
+    {
+      path: '/produksi/history-order',
+      component: HistoryProduksi, 
+      meta: { 
+        requiresAuth: true,
+        department: 'produksi',
+        role: 'managerpproduksi'
       }
     },
     {

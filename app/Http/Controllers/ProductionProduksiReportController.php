@@ -32,12 +32,10 @@ class ProductionProduksiReportController extends Controller
             $query = ProductionReport::with('pembuat')
                 ->orderBy('created_at', 'desc');
 
-            // Filter berdasarkan periode jika ada
             if ($request->has('periode_awal') && $request->has('periode_akhir')) {
                 $query->whereBetween('periode_awal', [$request->periode_awal, $request->periode_akhir]);
             }
 
-            // Filter bulan ini secara default
             if (!$request->has('periode_awal')) {
                 $startOfMonth = Carbon::now()->startOfMonth();
                 $endOfMonth = Carbon::now()->endOfMonth();
@@ -78,13 +76,10 @@ class ProductionProduksiReportController extends Controller
                 'catatan' => 'nullable|string'
             ]);
 
-            // Generate nomor laporan
             $nomorLaporan = 'LAP-PROD-' . date('Ymd') . '-' . str_pad(ProductionReport::count() + 1, 4, '0', STR_PAD_LEFT);
 
-            // Hitung statistik produksi
             $statistik = $this->calculateProductionStats($request->periode_awal, $request->periode_akhir);
 
-            // Buat laporan
             $laporan = ProductionReport::create([
                 'nomor_laporan' => $nomorLaporan,
                 'periode_awal' => $request->periode_awal,
@@ -115,12 +110,10 @@ class ProductionProduksiReportController extends Controller
         $periodeAwal = Carbon::parse($periodeAwal);
         $periodeAkhir = Carbon::parse($periodeAkhir);
 
-        // Total order dalam periode
         $totalOrder = DB::table('production_orders')
             ->whereBetween('created_at', [$periodeAwal, $periodeAkhir])
             ->count();
 
-        // Order berdasarkan status
         $orderByStatus = DB::table('production_orders')
             ->select('status', DB::raw('COUNT(*) as total'))
             ->whereBetween('created_at', [$periodeAwal, $periodeAkhir])
@@ -129,26 +122,22 @@ class ProductionProduksiReportController extends Controller
             ->pluck('total', 'status')
             ->toArray();
 
-        // Total produksi (jumlah aktual)
         $totalProduksi = DB::table('production_orders')
             ->whereBetween('updated_at', [$periodeAwal, $periodeAkhir])
             ->where('status', 'selesai')
             ->sum('jumlah_aktual');
 
-        // Total reject
         $totalReject = DB::table('production_orders')
             ->whereBetween('updated_at', [$periodeAwal, $periodeAkhir])
             ->where('status', 'selesai')
             ->sum('jumlah_reject');
 
-        // Efisiensi produksi
         $totalTarget = DB::table('production_orders')
             ->whereBetween('created_at', [$periodeAwal, $periodeAkhir])
             ->sum('target_jumlah');
 
         $efisiensi = $totalTarget > 0 ? round(($totalProduksi / $totalTarget) * 100, 2) : 0;
 
-        // Data per produk
         $produkStats = DB::table('production_orders as po')
             ->join('master_products as mp', 'po.produk_id', '=', 'mp.id')
             ->select(
@@ -164,7 +153,6 @@ class ProductionProduksiReportController extends Controller
             ->groupBy('mp.id', 'mp.kode', 'mp.nama')
             ->get();
 
-        // Data harian untuk chart
         $dailyStats = DB::table('production_orders')
             ->select(
                 DB::raw('DATE(created_at) as tanggal'),
@@ -200,7 +188,6 @@ class ProductionProduksiReportController extends Controller
     public function exportExcel($id)
     {
         try {
-            // Check if user is authenticated
             $user = Auth::user();
             if (!$user) {
                 return response()->json([
@@ -209,7 +196,6 @@ class ProductionProduksiReportController extends Controller
                 ], 401);
             }
 
-            // Clear all output buffers to prevent corruption
             while (ob_get_level()) {
                 ob_end_clean();
             }
@@ -222,17 +208,14 @@ class ProductionProduksiReportController extends Controller
             $laporan = ProductionReport::with('pembuat')->findOrFail($id);
             $statistik = $this->calculateProductionStats($laporan->periode_awal, $laporan->periode_akhir);
 
-            // Create spreadsheet
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
-            // Set report title
             $sheet->setCellValue('A1', 'LAPORAN PRODUKSI');
             $sheet->mergeCells('A1:J1');
             $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
             $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            // Info laporan
             $sheet->setCellValue('A2', 'Nomor Laporan: ' . $laporan->nomor_laporan);
             $sheet->mergeCells('A2:J2');
             $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
@@ -249,20 +232,17 @@ class ProductionProduksiReportController extends Controller
             $sheet->mergeCells('A5:J5');
             $sheet->getStyle('A5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            // Ringkasan Produksi
             $sheet->setCellValue('A7', 'RINGKASAN PRODUKSI');
             $sheet->mergeCells('A7:B7');
             $sheet->getStyle('A7')->getFont()->setBold(true);
             $sheet->getStyle('A7')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE6E6FA');
 
-            // Summary headers
             $sheet->setCellValue('A8', 'Metrik');
             $sheet->setCellValue('B8', 'Nilai');
             $sheet->getStyle('A8:B8')->getFont()->setBold(true);
             $sheet->getStyle('A8:B8')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE6E6FA');
             $sheet->getStyle('A8:B8')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
-            // Summary data
             $ringkasanData = [
                 ['Total Order', $statistik['ringkasan']['total_order']],
                 ['Total Target Produksi', $statistik['ringkasan']['total_target']],
@@ -280,7 +260,6 @@ class ProductionProduksiReportController extends Controller
                 $row++;
             }
 
-            // Status Order
             $row += 2;
             $sheet->setCellValue('A' . $row, 'STATUS ORDER');
             $sheet->mergeCells('A' . $row . ':B' . $row);
@@ -310,7 +289,6 @@ class ProductionProduksiReportController extends Controller
                 $row++;
             }
 
-            // Statistik Per Produk
             $sheet->setCellValue('D7', 'STATISTIK PER PRODUK');
             $sheet->mergeCells('D7:J7');
             $sheet->getStyle('D7')->getFont()->setBold(true);
@@ -346,15 +324,12 @@ class ProductionProduksiReportController extends Controller
                 $sheet->getStyle('D' . $row . ':J' . $row)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
             }
 
-            // Auto-size columns
             foreach (range('A', 'J') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
-            // Sanitize filename with timestamp for uniqueness
             $filename = 'Laporan_Produksi_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $laporan->nomor_laporan) . '_' . Carbon::now()->format('YmdHis') . '.xlsx';
 
-            // Stream file to browser
             $writer = new Xlsx($spreadsheet);
 
             $response = new StreamedResponse(function () use ($writer) {

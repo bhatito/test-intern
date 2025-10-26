@@ -31,7 +31,6 @@ class ProductionReportController extends Controller
             $minggu = $request->minggu ?? 1;
             $periode = $request->periode ?? 'bulanan';
 
-            // Tentukan range tanggal berdasarkan periode
             if ($periode === 'bulanan' && $tahun && $bulan) {
                 $startDate = Carbon::create($tahun, $bulan, 1)->startOfMonth();
                 $endDate = $startDate->copy()->endOfMonth();
@@ -39,14 +38,12 @@ class ProductionReportController extends Controller
                 $startDate = Carbon::now()->setISODate($tahun, $minggu)->startOfWeek();
                 $endDate = $startDate->copy()->endOfWeek();
             } else {
-                // Default: bulan ini
                 $startDate = Carbon::now()->startOfMonth();
                 $endDate = Carbon::now()->endOfMonth();
             }
 
             Log::info('Date Range', ['start' => $startDate, 'end' => $endDate]);
 
-            // Query untuk data laporan
             $query = ProductionPlan::with([
                 'produk',
                 'orderProduksi',
@@ -58,7 +55,6 @@ class ProductionReportController extends Controller
             ])
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
-            // Filter status jika ada
             if ($request->status) {
                 $query->where('status', $request->status);
             }
@@ -71,7 +67,6 @@ class ProductionReportController extends Controller
                 return $this->formatLaporanItem($plan);
             });
 
-            // Hitung statistik
             $statistics = $this->calculateStatistics($laporanData);
 
             return response()->json([
@@ -114,7 +109,6 @@ class ProductionReportController extends Controller
             $minggu = $request->minggu ?? 1;
             $periode = $request->periode ?? 'bulanan';
 
-            // Tentukan range tanggal berdasarkan periode
             if ($periode === 'bulanan' && $tahun && $bulan) {
                 $startDate = Carbon::create($tahun, $bulan, 1)->startOfMonth();
                 $endDate = $startDate->copy()->endOfMonth();
@@ -128,7 +122,6 @@ class ProductionReportController extends Controller
                 ], 400);
             }
 
-            // Ambil data untuk laporan
             $productionPlans = ProductionPlan::with([
                 'produk',
                 'orderProduksi',
@@ -146,7 +139,6 @@ class ProductionReportController extends Controller
 
             $statistics = $this->calculateStatistics($laporanData);
 
-            // Generate nomor laporan virtual
             $nomorLaporan = 'LAP/' .
                 ($periode === 'bulanan' ?
                     strtoupper($startDate->format('M')) . '/' . $tahun :
@@ -186,7 +178,6 @@ class ProductionReportController extends Controller
     public function export(Request $request)
     {
         try {
-            // Ambil data berdasarkan filter
             $startDate = null;
             $endDate = null;
             $tahun = $request->tahun ?? Carbon::now()->year;
@@ -194,7 +185,6 @@ class ProductionReportController extends Controller
             $minggu = $request->minggu ?? 1;
             $periode = $request->periode ?? 'bulanan';
 
-            // Tentukan range tanggal berdasarkan periode
             if ($periode === 'bulanan' && $tahun && $bulan) {
                 $startDate = Carbon::create($tahun, $bulan, 1)->startOfMonth();
                 $endDate = $startDate->copy()->endOfMonth();
@@ -206,7 +196,6 @@ class ProductionReportController extends Controller
                 $endDate = Carbon::now()->endOfMonth();
             }
 
-            // Query data
             $query = ProductionPlan::with([
                 'produk',
                 'orderProduksi',
@@ -225,27 +214,22 @@ class ProductionReportController extends Controller
                 return $this->formatLaporanItem($plan);
             });
 
-            // Buat spreadsheet
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
-            // Set judul laporan
             $sheet->setCellValue('A1', 'LAPORAN RENCANA PRODUKSI');
             $sheet->mergeCells('A1:L1');
             $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
             $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            // Info periode
             $sheet->setCellValue('A2', 'Periode: ' . $startDate->format('d/m/Y') . ' - ' . $endDate->format('d/m/Y'));
             $sheet->mergeCells('A2:L2');
             $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            // Tanggal export
             $sheet->setCellValue('A3', 'Tanggal Export: ' . Carbon::now()->format('d/m/Y H:i:s'));
             $sheet->mergeCells('A3:L3');
             $sheet->getStyle('A3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            // Header tabel
             $headers = [
                 'No',
                 'Nomor Rencana',
@@ -265,7 +249,6 @@ class ProductionReportController extends Controller
             $row = 5;
             $col = 'A';
 
-            // Set header
             foreach ($headers as $header) {
                 $sheet->setCellValue($col . $row, $header);
                 $sheet->getStyle($col . $row)->getFont()->setBold(true);
@@ -274,7 +257,6 @@ class ProductionReportController extends Controller
                 $col++;
             }
 
-            // Isi data
             $row = 6;
             $no = 1;
 
@@ -293,7 +275,6 @@ class ProductionReportController extends Controller
                 $sheet->setCellValue('L' . $row, $data['disetujui_oleh'] ?? '-');
                 $sheet->setCellValue('M' . $row, $this->formatExcelDate($data['tanggal_dibuat']));
 
-                // Style untuk row data
                 $style = $sheet->getStyle('A' . $row . ':M' . $row);
                 $style->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
@@ -301,17 +282,14 @@ class ProductionReportController extends Controller
                 $no++;
             }
 
-            // Auto size columns
             foreach (range('A', 'M') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
-            // Set nama file
             $bulanLabel = $this->getBulanLabel($bulan);
             $filename = 'Laporan_Rencana_Produksi_' . $periode . '_' . $tahun . '_' .
                 ($periode === 'bulanan' ? $bulanLabel : 'Minggu_' . $minggu) . '.xlsx';
 
-            // Stream file ke browser
             $writer = new Xlsx($spreadsheet);
 
             $response = new StreamedResponse(function () use ($writer) {
@@ -337,9 +315,6 @@ class ProductionReportController extends Controller
         }
     }
 
-    /**
-     * Format data untuk item laporan
-     */
     private function formatLaporanItem($plan)
     {
         $progress = $this->calculateProgress($plan->status);
@@ -383,9 +358,6 @@ class ProductionReportController extends Controller
         ];
     }
 
-    /**
-     * Hitung progress berdasarkan status
-     */
     private function calculateProgress($status)
     {
         $progressMap = [
@@ -398,9 +370,6 @@ class ProductionReportController extends Controller
         return $progressMap[$status] ?? 0;
     }
 
-    /**
-     * Hitung statistik laporan
-     */
     private function calculateStatistics($laporanData)
     {
         $totalRencana = count($laporanData);
@@ -430,9 +399,6 @@ class ProductionReportController extends Controller
         ];
     }
 
-    /**
-     * Helper: Get label status
-     */
     private function getStatusLabel($status)
     {
         $statusLabels = [
@@ -446,18 +412,12 @@ class ProductionReportController extends Controller
         return $statusLabels[$status] ?? $status;
     }
 
-    /**
-     * Helper: Format date untuk Excel
-     */
     private function formatExcelDate($dateString)
     {
         if (!$dateString) return '-';
         return Carbon::parse($dateString)->format('d/m/Y');
     }
 
-    /**
-     * Helper: Get label bulan
-     */
     private function getBulanLabel($bulan)
     {
         $bulanList = [

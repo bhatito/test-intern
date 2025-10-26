@@ -38,11 +38,6 @@ class ProductionOrder extends Model
     ];
 
     /**
-     * 🔹 Generate UUID & nomor order otomatis
-     */
-
-
-    /**
      * 🔗 Relasi ke Rencana Produksi
      */
     public function rencana()
@@ -59,7 +54,7 @@ class ProductionOrder extends Model
     }
 
     /**
-     * 🔗 Relasi ke Staff Produksi
+     * 🔗 Relasi ke Staff Produksi - PASTIKAN RELASI INI ADA
      */
     public function pekerja()
     {
@@ -85,7 +80,29 @@ class ProductionOrder extends Model
     /**
      * 🧠 Accessor label status agar tampil lebih ramah di UI
      */
+    public function getStatusLabelAttribute()
+    {
+        $statusLabels = [
+            'menunggu' => 'Menunggu',
+            'dalam_proses' => 'Dalam Proses',
+            'selesai' => 'Selesai'
+            // Hapus ditutup karena tidak ada
+        ];
 
+        return $statusLabels[$this->status] ?? $this->status;
+    }
+
+    /**
+     * 🧠 Accessor untuk progress persentase
+     */
+    public function getProgressPercentageAttribute()
+    {
+        if (!$this->jumlah_aktual || !$this->target_jumlah) {
+            return 0;
+        }
+
+        return min(round(($this->jumlah_aktual / $this->target_jumlah) * 100), 100);
+    }
 
     public static function booted()
     {
@@ -116,5 +133,32 @@ class ProductionOrder extends Model
     public function scopeStatus($query, $status)
     {
         return $query->where('status', $status);
+    }
+
+    /**
+     * 🔍 Scope untuk mencari berdasarkan nomor order atau nama produk
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('nomor_order', 'like', "%{$search}%")
+                ->orWhereHas('produk', function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('kode', 'like', "%{$search}%");
+                });
+        });
+    }
+
+    /**
+     * 🔍 Scope untuk filter by date range
+     */
+    public function scopeDateRange($query, $startDate, $endDate = null)
+    {
+        $endDate = $endDate ?: $startDate;
+
+        return $query->whereBetween('created_at', [
+            $startDate . ' 00:00:00',
+            $endDate . ' 23:59:59'
+        ]);
     }
 }

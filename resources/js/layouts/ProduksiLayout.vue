@@ -84,6 +84,12 @@ const menuItems = computed(() => {
       { 
         path: '/produksi/laporan-produksi', 
         label: 'Laporan Produksi', 
+        icon: '📋',
+        badge: 0
+      },
+      { 
+        path: '/produksi/history-order', 
+        label: 'History Order', 
         icon: '📊',
         badge: 0
       },

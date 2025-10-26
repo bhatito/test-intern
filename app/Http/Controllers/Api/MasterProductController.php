@@ -9,18 +9,14 @@ use Illuminate\Support\Str;
 
 class MasterProductController extends Controller
 {
-    /**
-     * Menampilkan semua produk
-     */
+
     public function index()
     {
         $produk = MasterProduct::orderBy('nama')->get();
         return response()->json($produk);
     }
 
-    /**
-     * Menyimpan produk baru
-     */
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -38,17 +34,11 @@ class MasterProductController extends Controller
         ], 201);
     }
 
-    /**
-     * Menampilkan detail produk
-     */
     public function show(MasterProduct $master_product)
     {
         return response()->json($master_product);
     }
 
-    /**
-     * Update produk
-     */
     public function update(Request $request, MasterProduct $master_product)
     {
         $validated = $request->validate([
@@ -66,9 +56,6 @@ class MasterProductController extends Controller
         ]);
     }
 
-    /**
-     * Hapus produk
-     */
     public function destroy(MasterProduct $master_product)
     {
         $master_product->delete();

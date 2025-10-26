@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class DashboardProduksiController extends Controller
 {
-    /**
-     * Menampilkan dashboard produksi
-     */
+
     public function index()
     {
         try {
@@ -39,9 +37,6 @@ class DashboardProduksiController extends Controller
         }
     }
 
-    /**
-     * Mendapatkan statistik dashboard produksi
-     */
     public function getDashboardStats()
     {
         try {
@@ -63,17 +58,12 @@ class DashboardProduksiController extends Controller
         }
     }
 
-    /**
-     * Menghitung statistik dashboard - SAMA untuk semua role
-     */
     private function calculateDashboardStats($user)
     {
         $stats = $this->getDefaultStats();
 
         try {
-            // Untuk semua role, tampilkan data yang sama dari production_orders
             $baseQuery = DB::table('production_orders');
-            // $plant = DB::table('production_plans');
 
             $stats = [
                 'total' => (clone $baseQuery)->count(),
@@ -95,9 +85,6 @@ class DashboardProduksiController extends Controller
         }
     }
 
-    /**
-     * Mendapatkan jumlah persetujuan yang pending (untuk notifikasi)
-     */
     public function getPendingApprovalsCount()
     {
         try {
@@ -122,9 +109,6 @@ class DashboardProduksiController extends Controller
         }
     }
 
-    /**
-     * Mendapatkan jumlah order yang sudah disetujui/dikerjakan
-     */
     public function getApprovedOrdersCount()
     {
         try {
@@ -149,9 +133,6 @@ class DashboardProduksiController extends Controller
         }
     }
 
-    /**
-     * Default stats ketika data tidak tersedia
-     */
     private function getDefaultStats()
     {
         return [
